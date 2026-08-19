@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>更好的日记本 · 前端模型</title>
-<style>body{margin:0;background:#e8e2d7;padding:24px 12px;display:flex;justify-content:center;}</style>
+<style>body{margin:0;background:#0a0f1c;padding:24px 12px;display:flex;justify-content:center;}</style>
 <script>
 /**
  * @license lucide v0.460.0 - ISC
@@ -22,7 +22,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 </script>
 </head>
 <body>
-<div id="diary-mock">
+<div id="diary-mock" data-theme="warm">
   <style>
     #diary-mock {
       --paper: light-dark(#faf8f5, #201c17);
@@ -33,10 +33,139 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       --gold: light-dark(#d4a853, #d8ad5f);
       --scrim: rgba(18, 12, 5, .38);
       --chip: light-dark(#f4eee2, #352d24);
+      --otd-top: light-dark(#f0ece3, #262119);
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--ink);
     }
     #diary-mock [hidden] { display: none !important; }
+    #diary-mock[data-theme="cool"] {
+      --paper: #0d1322;
+      --paper-deep: #111a2e;
+      --ink: #e6eefc;
+      --ink-soft: #8ea2c0;
+      --line: #22304f;
+      --gold: #53b8e0;
+      --chip: rgba(83, 184, 224, .10);
+      --otd-top: #0e1526;
+    }
+    #diary-mock[data-theme="warm"] .day { border-radius: 14px; }
+    #diary-mock[data-theme="warm"] .f-chip { border-radius: 12px; }
+    #diary-mock[data-theme="warm"] .f-chip:hover { transform: translateY(-1px); }
+    #diary-mock[data-theme="cool"] .day { border-radius: 8px; }
+    #diary-mock[data-theme="cool"] .day.today { box-shadow: inset 0 0 0 1.5px var(--gold), 0 0 10px color-mix(in srgb, var(--gold) 55%, transparent); }
+    #diary-mock[data-theme="cool"] .theme-btn { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 60%, transparent); }
+    #diary-mock[data-theme="cool"] #calendarScreen {
+      background-image: repeating-linear-gradient(135deg, transparent 0 18px, color-mix(in srgb, var(--gold) 7%, transparent) 18px 19px);
+    }
+    #diary-mock[data-theme="cyber"] {
+      --paper: light-dark(#0b0f1a, #0b0f1a);
+      --paper-deep: light-dark(#101727, #101727);
+      --ink: light-dark(#e8f0ff, #e8f0ff);
+      --ink-soft: light-dark(#7c8db5, #7c8db5);
+      --line: light-dark(#23304f, #23304f);
+      --gold: light-dark(#22d3ee, #22d3ee);
+      --chip: light-dark(rgba(34, 211, 238, .08), rgba(34, 211, 238, .08));
+      --otd-top: light-dark(#101727, #101727);
+    }
+    #diary-mock[data-theme="cyber"] .cal-head h2 {
+      background: linear-gradient(90deg, #22d3ee, #a78bfa);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    #diary-mock[data-theme="cyber"] .f-chip { background: rgba(255, 255, 255, .04); backdrop-filter: blur(6px); }
+    #diary-mock[data-theme="cyber"] .day.today {
+      box-shadow: inset 0 0 0 1.5px var(--gold), 0 0 14px color-mix(in srgb, var(--gold) 70%, transparent);
+    }
+    #diary-mock[data-theme="cyber"] .theme-btn { box-shadow: inset 0 0 0 1px var(--gold), 0 0 8px color-mix(in srgb, var(--gold) 50%, transparent); }
+    #diary-mock[data-theme="cool"] .screen,
+    #diary-mock[data-theme="cyber"] .screen {
+      background: rgba(8, 12, 24, .42);
+      backdrop-filter: blur(16px);
+    }
+    #diary-mock[data-theme="cool"] .quick-add,
+    #diary-mock[data-theme="cyber"] .quick-add {
+      background: rgba(255, 255, 255, .05);
+      backdrop-filter: blur(8px);
+      border-color: rgba(255, 255, 255, .14);
+    }
+    #diary-mock[data-theme="cool"] .quick-add.primary,
+    #diary-mock[data-theme="cyber"] .quick-add.primary {
+      background: linear-gradient(135deg, #2fd4ff, #22d3ee, #a78bfa);
+      color: #06121f;
+      box-shadow: 0 6px 18px rgba(34, 211, 238, .35);
+    }
+    #diary-mock[data-theme="cool"] .day.has:not(.today):not(.hit),
+    #diary-mock[data-theme="cyber"] .day.has:not(.today):not(.hit) {
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 30%, transparent);
+      animation: breatheCell 5s ease-in-out infinite;
+    }
+    #diary-mock[data-theme="cool"] .day.has:hover,
+    #diary-mock[data-theme="cyber"] .day.has:hover { animation: none; }
+    @keyframes breatheCell {
+      0%, 100% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 26%, transparent); }
+      50% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 52%, transparent), 0 0 8px color-mix(in srgb, var(--gold) 30%, transparent); }
+    }
+    #diary-mock[data-theme="cool"] .day:hover,
+    #diary-mock[data-theme="cyber"] .day:hover {
+      box-shadow: 0 0 14px color-mix(in srgb, var(--gold) 45%, transparent);
+      transform: translateY(-2px);
+    }
+    #diary-mock[data-theme="cool"] .day.hit:hover,
+    #diary-mock[data-theme="cyber"] .day.hit:hover {
+      box-shadow: inset 0 0 0 2.5px var(--hit), 0 0 14px color-mix(in srgb, var(--gold) 40%, transparent);
+    }
+    #diary-mock[data-theme="cool"] .day.today:hover,
+    #diary-mock[data-theme="cyber"] .day.today:hover {
+      box-shadow: inset 0 0 0 1.5px var(--gold), 0 0 14px color-mix(in srgb, var(--gold) 60%, transparent);
+    }
+    #diary-mock[data-theme="cool"] .day.today,
+    #diary-mock[data-theme="cyber"] .day.today { animation: todayPulse 3s ease-in-out infinite; }
+    @keyframes todayPulse {
+      0%, 100% { box-shadow: inset 0 0 0 1.5px var(--gold), 0 0 6px color-mix(in srgb, var(--gold) 40%, transparent); }
+      50% { box-shadow: inset 0 0 0 1.5px var(--gold), 0 0 15px color-mix(in srgb, var(--gold) 75%, transparent); }
+    }
+    #diary-mock[data-theme="cool"] .day .dots i,
+    #diary-mock[data-theme="cyber"] .day .dots i {
+      box-shadow: 0 0 4px rgba(255, 255, 255, .25);
+      animation: breatheDot 4s ease-in-out infinite alternate;
+    }
+    @keyframes breatheDot { from { box-shadow: 0 0 3px rgba(255, 255, 255, .2); } to { box-shadow: 0 0 8px rgba(255, 255, 255, .55); } }
+    #diary-mock[data-theme="cool"] .streak,
+    #diary-mock[data-theme="cyber"] .streak { box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 40%, transparent); }
+    #diary-mock[data-theme="cool"] .seal { box-shadow: 0 0 12px color-mix(in srgb, var(--gold) 55%, transparent); }
+    #diary-mock[data-theme="cool"] .search-view,
+    #diary-mock[data-theme="cool"] .otd-view,
+    #diary-mock[data-theme="cool"] .sheet,
+    #diary-mock[data-theme="cyber"] .search-view,
+    #diary-mock[data-theme="cyber"] .otd-view,
+    #diary-mock[data-theme="cyber"] .sheet {
+      background: rgba(9, 13, 26, .72);
+      backdrop-filter: blur(20px);
+    }
+    #diary-mock[data-theme="cool"] .cal-head h2,
+    #diary-mock[data-theme="cyber"] .cal-head h2 {
+      background: linear-gradient(90deg, #53b8e0, #a78bfa, #f472b6, #53b8e0);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      background-size: 300% 100%;
+      animation: shimmer 7s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    #diary-mock[data-theme="cool"] .theme-btn,
+    #diary-mock[data-theme="cyber"] .theme-btn {
+      width: 36px; height: 36px; font-size: 17px;
+      background: rgba(8, 12, 24, .7); backdrop-filter: blur(6px);
+      animation: btnPulse 3.4s ease-in-out infinite;
+    }
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 50%, transparent), 0 0 8px color-mix(in srgb, var(--gold) 35%, transparent); }
+      50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 75%, transparent), 0 0 18px color-mix(in srgb, var(--gold) 65%, transparent); }
+    }
+    #diary-mock[data-theme="cool"] .nav button,
+    #diary-mock[data-theme="cyber"] .nav button,
+    #diary-mock[data-theme="cool"] .back-btn,
+    #diary-mock[data-theme="cyber"] .back-btn {
+      background: rgba(255, 255, 255, .06); backdrop-filter: blur(6px);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+    }
     #diary-mock .stage { width: 100%; display: flex; flex-direction: column; align-items: center; }
     #diary-mock .phone {
       width: min(372px, 100%);
@@ -48,6 +177,32 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       position: relative;
       overflow: hidden;
     }
+    #diary-mock .bg-fx {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+      transition: opacity .6s;
+      background:
+        radial-gradient(620px 420px at 12% 8%, rgba(34, 211, 238, .22), transparent 60%),
+        radial-gradient(520px 440px at 88% 22%, rgba(167, 139, 250, .20), transparent 60%),
+        radial-gradient(580px 480px at 50% 92%, rgba(244, 114, 182, .16), transparent 60%),
+        repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, .02) 3px 4px);
+      overflow: hidden;
+    }
+    #diary-mock .bg-fx::before, #diary-mock .bg-fx::after {
+      content: ''; position: absolute; width: 340px; height: 340px; border-radius: 50%;
+      filter: blur(60px); opacity: .75;
+    }
+    #diary-mock .bg-fx::before { background: rgba(34, 211, 238, .45); top: -90px; left: -70px; animation: fxdrift1 14s ease-in-out infinite alternate, breatheBlob 7s ease-in-out infinite; }
+    #diary-mock .bg-fx::after { background: rgba(167, 139, 250, .45); bottom: -110px; right: -80px; animation: fxdrift2 18s ease-in-out infinite alternate, breatheBlob 7.8s ease-in-out infinite; }
+    @keyframes fxdrift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(70px, 45px) scale(1.18); } }
+    @keyframes fxdrift2 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-55px, -35px) scale(1.12); } }
+    @keyframes breatheBlob { 0%, 100% { opacity: .6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+    #diary-mock .bg-fx .sweep {
+      position: absolute; inset: -30% -60%;
+      background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, .05) 50%, transparent 58%);
+      animation: sweep 9s linear infinite;
+    }
+    @keyframes sweep { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
+    #diary-mock[data-theme="cool"] .bg-fx, #diary-mock[data-theme="cyber"] .bg-fx { opacity: 1; }
     #diary-mock .statusbar {
       position: absolute; top: 0; left: 0; right: 0; height: 30px; z-index: 5;
       display: flex; align-items: center; justify-content: space-between;
@@ -62,6 +217,24 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       display: flex; align-items: center; padding: 6px 20px 2px;
     }
     #diary-mock .cal-side { flex: 1; }
+    #diary-mock .theme-btn {
+      width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(120, 100, 70, .10); color: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #diary-mock .streak {
+      display: inline-flex; align-items: center; gap: 2px;
+      font-size: 12px; font-weight: 600; color: var(--ink);
+      background: color-mix(in srgb, var(--gold) 18%, transparent);
+      border: none; border-radius: 999px; padding: 3px 9px; cursor: pointer;
+    }
+    #diary-mock .streak-wrap {
+      position: absolute; right: 8px; bottom: 62px; z-index: 4;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+      transition: opacity .3s;
+    }
+    #diary-mock .streak-wrap.hide { opacity: 0; pointer-events: none; }
+    #diary-mock .streak-cap { font-size: 9px; color: var(--ink-soft); }
     #diary-mock .cal-head h2 { flex: 1; text-align: center; font-size: 17px; font-weight: 600; margin: 0; white-space: nowrap; }
     #diary-mock .cal-head h2 #yearEdit, #diary-mock .cal-head h2 #monthEdit { display: inline-block; }
     #diary-mock .cal-head h2 .cal-title { display: inline-block; min-width: 9em; text-align: center; }
@@ -169,6 +342,34 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .s-result .s-dots { display: flex; gap: 3px; flex: 0 0 auto; }
     #diary-mock .s-result .s-dots i { width: 6px; height: 6px; border-radius: 50%; }
     #diary-mock .s-empty { text-align: center; font-size: 12px; color: var(--ink-soft); padding: 40px 0; }
+    #diary-mock .share-view {
+      position: absolute; inset: 0; z-index: 38; background: rgba(10, 8, 4, .55);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    #diary-mock .share-view.show { opacity: 1; pointer-events: auto; }
+    #diary-mock .share-card {
+      width: 84%; background: var(--paper); border-radius: 18px; padding: 18px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .35);
+    }
+    #diary-mock .share-top { display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 600; }
+    #diary-mock .share-seal {
+      font-family: "Songti SC", serif; color: light-dark(#a8442e, #e0937c);
+      border: 2px solid currentColor; border-radius: 6px; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center; font-size: 13px;
+    }
+    #diary-mock .share-dots { display: flex; gap: 4px; margin: 12px 0 8px; }
+    #diary-mock .share-dots i { width: 8px; height: 8px; border-radius: 50%; }
+    #diary-mock .share-text { font-size: 13px; line-height: 22px; color: var(--ink); }
+    #diary-mock .share-action {
+      margin-top: 14px; width: 100%; height: 42px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #eed9a8, #d8ad5f); color: #4a3215;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    #diary-mock .share-close {
+      margin-top: 8px; width: 100%; height: 34px; border: none; border-radius: 10px;
+      background: var(--chip); color: var(--ink-soft); font-size: 12px; cursor: pointer;
+    }
     #diary-mock .quick-add {
       display: inline-flex; align-items: center; gap: 6px; padding: 7px 18px; border-radius: 999px;
       border: 1px dashed var(--line); background: transparent; color: var(--ink-soft); font-size: 13px; cursor: pointer;
@@ -206,8 +407,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .otd-canvas {
       flex: 1; position: relative; min-height: 0; overflow: hidden;
       background:
-        linear-gradient(to bottom, transparent 0 38.12%, rgba(190, 145, 70, .5) 38.12%, rgba(190, 145, 70, .5) 38.28%, transparent 38.28%),
-        linear-gradient(to bottom, light-dark(#f0ece3, #262119) 0%, light-dark(#f0ece3, #262119) 38.2%, var(--paper) 38.2%);
+        linear-gradient(to bottom, transparent 0 38.12%, color-mix(in srgb, var(--gold) 50%, transparent) 38.12%, color-mix(in srgb, var(--gold) 50%, transparent) 38.28%, transparent 38.28%),
+        linear-gradient(to bottom, var(--otd-top) 0%, var(--otd-top) 38.2%, var(--paper) 38.2%);
     }
     #diary-mock .otd-rules {
       position: absolute; inset: 0; opacity: .38; pointer-events: none;
@@ -270,7 +471,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .otd-view.landed .otd-context .yr-card:nth-of-type(3) { transition-delay: 2.42s; }
     #diary-mock .otd-view.landed .otd-context .yr-card:nth-of-type(4) { transition-delay: 2.48s; }
     #diary-mock .otd-view.landed .otd-tag { transition-delay: 2.56s; }
-    #diary-mock .otd-context h3 { font-size: 11px; color: var(--ink-soft); font-weight: 600; margin: 0 0 8px; text-align: center; }
+    #diary-mock .otd-context h3 { font-size: 11px; color: var(--ink); font-weight: 600; margin: 0 0 8px; text-align: center; opacity: .9; }
     #diary-mock .otd-context ul, #diary-mock .otd-col > div {
       list-style: none; margin: 0; padding: 0; flex: 1; min-height: 0;
       display: flex; flex-direction: column; justify-content: space-evenly;
@@ -364,12 +565,37 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       background: transparent; color: var(--ink-soft); font-size: 11px; font-weight: 600;
       cursor: pointer; flex: 0 0 auto;
     }
+    #diary-mock .d-right { display: flex; gap: 6px; flex: 0 0 auto; }
+    #diary-mock .share-btn {
+      width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line);
+      background: transparent; color: var(--ink-soft); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #diary-mock .share-btn i { width: 14px; height: 14px; }
     #diary-mock .paper {
       flex: 1; overflow: hidden; position: relative; margin: 0 14px; border-radius: 16px;
       background: var(--paper-deep);
     }
     #diary-mock .paper .rules { position: absolute; inset: 0; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, var(--line) 27px, var(--line) 28px); opacity: .55; }
-    #diary-mock .paper .body { position: absolute; inset: 0; overflow: hidden; padding: 0 18px; }
+    #diary-mock .paper .body { position: absolute; inset: 0; overflow: hidden; padding: 0 58px 0 18px; }
+    #diary-mock .seal {
+      position: absolute; top: 8px; right: 12px; z-index: 3; pointer-events: none;
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border-radius: 6px; font-size: 15px; font-weight: 700; font-family: "Songti SC", "STSong", serif;
+      color: light-dark(#a8442e, #e0937c); border: 2px solid light-dark(#a8442e, #e0937c);
+      opacity: 0;
+    }
+    #diary-mock .seal.show { animation: seal-stamp .5s cubic-bezier(.2, .9, .3, 1.2) forwards; }
+    #diary-mock[data-theme="cool"] .seal {
+      color: var(--gold); border-color: var(--gold);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 60%, transparent);
+    }
+    @keyframes seal-stamp {
+      0% { transform: scale(2.3) rotate(-20deg); opacity: 0; }
+      55% { transform: scale(.9) rotate(-6deg); opacity: 1; }
+      75% { transform: scale(1.08) rotate(-6deg); }
+      100% { transform: scale(1) rotate(-6deg); opacity: .85; }
+    }
     #diary-mock .meta { font-size: 11px; color: var(--ink-soft); line-height: 28px; padding-bottom: 0; border-bottom: 1px solid var(--line); margin-bottom: 0; }
     #diary-mock .content { font-size: 14px; line-height: 28px; }
     #diary-mock .content:focus, #diary-mock .polish .col p:focus { outline: none; }
@@ -563,11 +789,14 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
   <div class="stage">
     <div class="phone">
-      <div class="statusbar"><span>9:41</span><span>●●● ▮</span></div>
+      <div class="statusbar"><span>9:41</span><span id="sbRight">🌸 ✨</span></div>
+      <div class="bg-fx" aria-hidden="true"><div class="sweep"></div></div>
 
       <div class="screen" id="calendarScreen">
         <div class="cal-head" id="calHead">
-          <span class="cal-side"></span>
+          <span class="cal-side">
+            <button type="button" class="theme-btn" id="themeBtn" aria-label="切换主题"><span id="themeEmoji">🌸</span></button>
+          </span>
           <h2 id="monthTitle"><span class="cal-title"><span id="yearEdit" data-edit="year" title="长按 2 秒自定义年份">2026年</span> <span id="monthEdit" data-edit="month" title="长按 2 秒自定义月份">8月</span></span></h2>
           <div class="nav">
             <button type="button" id="prevMonthBtn" aria-label="上个月"><i data-lucide="chevron-left"></i></button>
@@ -583,6 +812,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
+        <div class="streak-wrap" id="streakWrap">
+          <span class="streak-cap">连续天数</span>
+          <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
+        </div>
         <div class="empty-hint" id="emptyHint" hidden>这个月还没有留下记录</div>
         <div class="hint-bubble" id="hintBubble">长按可自定义：年份 · 月份 · 关键词</div>
       </div>
@@ -595,7 +828,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             <span id="dayNavLabel">8月2日 · 周日</span>
             <button type="button" id="nextDayBtn" aria-label="后一天"><i data-lucide="chevron-right"></i></button>
           </div>
-          <button type="button" class="aa-btn" id="fontBtn" aria-label="调整字号">Aa</button>
+          <span class="d-right">
+            <button type="button" class="share-btn" id="shareBtn" aria-label="分享到朋友圈"><i data-lucide="share-2"></i></button>
+            <button type="button" class="aa-btn" id="fontBtn" aria-label="调整字号">Aa</button>
+          </span>
         </div>
         <div class="paper">
           <div class="rules"></div>
@@ -603,6 +839,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             <div class="meta" id="metaLine"></div>
             <div class="content" id="contentArea" contenteditable="true"></div>
           </div>
+          <div class="seal" id="diarySeal" hidden>留</div>
         </div>
         <div class="media-sec" id="mediaSec" hidden>
           <div class="media-row" id="mediaRow"></div>
@@ -693,6 +930,16 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         <div class="search-results" id="searchResults"></div>
       </div>
 
+      <div class="share-view" id="shareView">
+        <div class="share-card">
+          <div class="share-top"><span id="shareDate">8月9日 · 今天</span><span class="share-seal">留</span></div>
+          <div class="share-dots" id="shareDots"></div>
+          <div class="share-text" id="shareText"></div>
+          <button type="button" class="share-action" id="shareAction">分享到朋友圈（演示）</button>
+          <button type="button" class="share-close" id="shareClose">关闭</button>
+        </div>
+      </div>
+
       <div class="toast" id="toast"></div>
     </div>
 
@@ -719,6 +966,38 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         { key: 'down', name: '低落', color: '#8fa3b8', icon: 'cloud-rain', tone: 'cool' }
       ];
       const dimOf = Object.fromEntries(DIMS.map(d => [d.key, d]));
+      const THEMES = {
+        warm: {
+          name: '暖色 · 卡通',
+          emoji: '🌸',
+          deco: '🌸 ✨',
+          dims: { happy: '#ff9ebb', angry: '#e5705a', calm: '#e6c060', miss: '#c79bb8', out: '#59b7c6', together: '#6fb8a6', down: '#8fa3b8' }
+        },
+        cool: {
+          name: '炫酷 · 科幻',
+          emoji: '🚀',
+          deco: '🚀 🏀',
+          dims: { happy: '#f6a6c5', angry: '#ef8368', calm: '#a8d8d0', miss: '#c9a6cf', out: '#6fc0d2', together: '#7fc4b2', down: '#7f93b8' }
+        },
+        cyber: {
+          name: '赛博',
+          emoji: '⚡',
+          deco: '⚡ 🌐',
+          dims: { happy: '#ff5fb0', angry: '#ff7a5c', calm: '#3ee6c4', miss: '#c084fc', out: '#38bdf8', together: '#4ade80', down: '#94a3b8' }
+        }
+      };
+      let theme = 'warm';
+      function applyTheme(name) {
+        theme = name;
+        root.setAttribute('data-theme', name);
+        $('#themeEmoji').textContent = THEMES[name].emoji;
+        $('#sbRight').textContent = THEMES[name].deco;
+        const p = THEMES[name].dims;
+        DIMS.forEach(d => { d.color = p[d.key]; });
+        renderFilters();
+        renderCalendar();
+        if (state.screen === 'diary') { try { renderDiary(state.activeDate); } catch (e) { console.error(e); } }
+      }
       const VIS = [
         { k: 'self', label: '仅自己', icon: 'lock' },
         { k: 'partner', label: '伴侣可见', icon: 'heart' },
@@ -899,6 +1178,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           const num = el('span', 'num', String(d));
           b.appendChild(num);
           if (e) {
+            b.classList.add('has');
             let hit = false;
             if (state.filter) hit = colorKeys(e).includes(state.filter);
             else hit = true;
@@ -1007,6 +1287,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       function renderDiary(key) {
         const e = entry(key);
         state.activeDate = key;
+        $('#diarySeal').hidden = true;
         const fmt = '8月' + Number(key) + '日 · ' + e.wd;
         $('#dayNavLabel').textContent = fmt;
         $('#metaLine').innerHTML = '2026年8月' + Number(key) + '日 ' + e.wd + ' · ' + e.wx + ' · ' + e.loc + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '');
@@ -1058,6 +1339,15 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         t.classList.add('show');
         clearTimeout(showToast._t);
         showToast._t = setTimeout(() => t.classList.remove('show'), 2600);
+      }
+
+      function stampSeal() {
+        const s = $('#diarySeal');
+        if (!s) return;
+        s.classList.remove('show');
+        void s.offsetWidth;
+        s.hidden = false;
+        s.classList.add('show');
       }
 
       let pvIndex = 0;
@@ -1192,6 +1482,19 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         $('#searchView').classList.remove('open');
       }
 
+      function openShare() {
+        const e = entry(state.activeDate);
+        $('#shareDate').textContent = '8月' + Number(state.activeDate) + '日 · 今天';
+        const dots = $('#shareDots'); dots.innerHTML = '';
+        dayColorKeys(e).forEach(c => { const i = el('i', ''); i.style.background = dimOf[c].color; dots.appendChild(i); });
+        $('#shareText').textContent = dayText(e).slice(0, 60) || '今天，值得记下点什么。';
+        $('#shareView').classList.add('show');
+      }
+
+      function closeShare() {
+        $('#shareView').classList.remove('show');
+      }
+
       function setMicIcon() {
         $('#micBtn').innerHTML = '<i data-lucide="mic"></i>';
         icons();
@@ -1234,6 +1537,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (state.listening) return;
         state.listening = true; state.step = 0; state.spoken = [];
         playCue('start');
+        const sealEl = $('#diarySeal');
+        if (sealEl) sealEl.hidden = true;
         const e = entry(state.activeDate);
         if (state.justWritten) {
           state.justWritten = false;
@@ -1354,11 +1659,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
               renderDiary(state.activeDate);
               $('#polishCard').hidden = false;
               showToast(useRaw ? '已把原文写进日记' : '已把润色后的内容写进日记');
+              stampSeal();
             });
           });
         }
         showToast('AI 已轻度润色 · 只顺了口头语和语序，内容没动');
         icons();
+        stampSeal();
       }
 
       let holdTimer = null;
@@ -1425,6 +1732,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
       $('#prevMonthBtn').addEventListener('click', () => changeMonth(-1));
       $('#nextMonthBtn').addEventListener('click', () => changeMonth(1));
+      $('#themeBtn').addEventListener('click', () => {
+        const order = ['warm', 'cool', 'cyber'];
+        const next = order[(order.indexOf(theme) + 1) % order.length];
+        applyTheme(next);
+        showToast('已切换到「' + THEMES[next].name + '」主题');
+      });
       $('#calendarGrid').addEventListener('click', e => {
         if (suppressClick) { suppressClick = false; return; }
         const b = e.target.closest('button.day');
@@ -1503,6 +1816,14 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#searchBtn').addEventListener('click', () => { closeSheet(); openSearch(); });
       $('#searchClose').addEventListener('click', closeSearch);
       $('#searchInput').addEventListener('input', renderSearchResults);
+      $('#streakBadge').addEventListener('click', () => {
+        const cap = $('#streakWrap .streak-cap');
+        if (cap) cap.style.display = 'none';
+        showToast('说明已隐藏');
+      });
+      $('#shareBtn').addEventListener('click', openShare);
+      $('#shareClose').addEventListener('click', closeShare);
+      $('#shareAction').addEventListener('click', () => { closeShare(); showToast('已生成分享卡片，去朋友圈晒一晒（演示）'); });
       $('#playStart').addEventListener('click', () => playCue('start'));
       $('#playStop').addEventListener('click', () => playCue('stop'));
       $('#playError').addEventListener('click', () => playCue('error'));
