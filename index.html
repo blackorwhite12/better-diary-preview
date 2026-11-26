@@ -1172,6 +1172,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       const STORAGE_KEY = 'better-diary-local-v1';
       const PREFS_KEY = 'better-diary-prefs-v1';
       const BIRTHDAYS_KEY = 'better-diary-birthdays-v1';
+      const HIGHLIGHT_OVERRIDES = { '2026-10-23': '何宇峻结婚' };
       let BIRTHDAYS = [];
       try {
         const savedBirthdays = JSON.parse(localStorage.getItem(BIRTHDAYS_KEY) || '[]');
@@ -1527,7 +1528,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
               b.appendChild(flag);
             }
             const names = colorKeys(e).map(c => dimOf[c].name).join(' ');
-            const label = extractDayHighlight(e);
+            const label = extractDayHighlight(e, key);
             if (label) {
               b.classList.add('has-label');
             }
@@ -1568,7 +1569,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         $('#sDot').style.background = dimOf[e.main].color;
         $('#sDate').textContent = monthDayOf(key) + ' · ' + e.wd;
         $('#sMeta').textContent = (observance.full.length ? observance.full.join(' · ') + ' · ' : '') + e.wx + ' · ' + e.loc + ' · ' + visLabel(e);
-        $('#sHighlight').value = extractDayHighlight(e);
+        $('#sHighlight').value = extractDayHighlight(e, key);
         const hasMedia = e.media && e.media.photos && e.media.photos.length;
         const sm = $('#sMedia');
         if (hasMedia) {
@@ -1826,8 +1827,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         return lines.map(line => '<span>' + esc(line) + '</span>').join('');
       }
 
-      function extractDayHighlight(e) {
+      function extractDayHighlight(e, key) {
         if (e.highlightSource === 'manual') return e.highlight || '';
+        if (key && HIGHLIGHT_OVERRIDES[key]) return HIGHLIGHT_OVERRIDES[key];
         const next = extractTextHighlight(dayText(e));
         e.highlight = next;
         e.highlightSource = 'ai';
