@@ -741,6 +741,27 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       flex: 1; overflow: hidden; position: relative; margin: 0 14px; border-radius: 16px;
       background: var(--paper-deep);
     }
+    #diary-mock .entry-colors {
+      flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 8px 14px 0;
+    }
+    #diary-mock .entry-colors-label { flex: 0 0 auto; font-size: 10px; color: var(--ink-soft); }
+    #diary-mock .entry-color-scroll {
+      min-width: 0; flex: 1; display: flex; align-items: center; gap: 6px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    #diary-mock .entry-color-scroll::-webkit-scrollbar { display: none; }
+    #diary-mock .entry-color {
+      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+      height: 28px; padding: 0 9px; border-radius: 999px; cursor: pointer;
+      border: 1px solid var(--line); background: transparent; color: var(--ink-soft); font-size: 10px;
+    }
+    #diary-mock .entry-color .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ec); }
+    #diary-mock .entry-color.on {
+      color: var(--ink); border-color: var(--ec);
+      background: color-mix(in srgb, var(--ec) 13%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ec) 25%, transparent);
+    }
+    #diary-mock .entry-color.manage { color: var(--ink-soft); border-style: dashed; }
     #diary-mock .paper .rules { position: absolute; inset: 0; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, var(--line) 27px, var(--line) 28px); opacity: .55; }
     #diary-mock .paper .body { position: absolute; inset: 0; overflow: hidden; padding: 0 58px 0 18px; }
     #diary-mock .seal {
@@ -1044,6 +1065,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           </div>
           <div class="seal" id="diarySeal" hidden>留</div>
         </div>
+        <div class="entry-colors">
+          <span class="entry-colors-label">颜色</span>
+          <div class="entry-color-scroll" id="entryColorPicker"></div>
+        </div>
         <div class="media-sec" id="mediaSec" hidden>
           <div class="media-row" id="mediaRow"></div>
           <div class="media-note" id="mediaNote"></div>
@@ -1206,33 +1231,39 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     (function () {
       const root = document.getElementById('diary-mock');
       const DIMS = [
-        { key: 'happy', name: '开心', color: '#ff9ebb', icon: 'smile', tone: 'warm' },
-        { key: 'angry', name: '生气', color: '#e5705a', icon: 'zap', tone: 'warm' },
+        { key: 'happy', name: '开心', color: '#5f91c7', icon: 'smile', tone: 'warm' },
+        { key: 'angry', name: '不爽', color: '#3e4249', icon: 'zap', tone: 'warm' },
         { key: 'calm', name: '平静', color: '#e6c060', icon: 'leaf', tone: 'warm' },
         { key: 'miss', name: '想念', color: '#c79bb8', icon: 'moon-star', tone: 'warm' },
         { key: 'out', name: '外出', color: '#59b7c6', icon: 'plane', tone: 'cool' },
         { key: 'together', name: '陪伴', color: '#6fb8a6', icon: 'users', tone: 'cool' },
-        { key: 'down', name: '低落', color: '#8fa3b8', icon: 'cloud-rain', tone: 'cool' }
+        { key: 'down', name: '不开心', color: '#d86d64', icon: 'cloud-rain', tone: 'warm' }
       ];
+      const DEFAULT_FILTER_KEYS = ['happy', 'down', 'angry'];
+      const projectDimKey = key => {
+        if (DEFAULT_FILTER_KEYS.includes(key)) return key;
+        if (key === 'miss') return 'down';
+        return 'happy';
+      };
       const dimOf = Object.fromEntries(DIMS.map(d => [d.key, d]));
       const THEMES = {
         warm: {
           name: '暖色 · 卡通',
           emoji: '🌸',
           deco: '🌸 ✨',
-          dims: { happy: '#ff9ebb', angry: '#e5705a', calm: '#e6c060', miss: '#c79bb8', out: '#59b7c6', together: '#6fb8a6', down: '#8fa3b8' }
+          dims: { happy: '#5f91c7', angry: '#3e4249', calm: '#e6c060', miss: '#c79bb8', out: '#59b7c6', together: '#6fb8a6', down: '#d86d64' }
         },
         cool: {
           name: '炫酷 · 科幻',
           emoji: '🚀',
           deco: '🚀 🏀',
-          dims: { happy: '#f6a6c5', angry: '#ef8368', calm: '#a8d8d0', miss: '#c9a6cf', out: '#6fc0d2', together: '#7fc4b2', down: '#7f93b8' }
+          dims: { happy: '#67b7ff', angry: '#8b95a7', calm: '#a8d8d0', miss: '#c9a6cf', out: '#6fc0d2', together: '#7fc4b2', down: '#e6817e' }
         },
         cyber: {
           name: '赛博',
           emoji: '⚡',
           deco: '⚡ 🌐',
-          dims: { happy: '#ff5fb0', angry: '#ff7a5c', calm: '#3ee6c4', miss: '#c084fc', out: '#38bdf8', together: '#4ade80', down: '#94a3b8' }
+          dims: { happy: '#38bdf8', angry: '#94a3b8', calm: '#3ee6c4', miss: '#c084fc', out: '#38bdf8', together: '#4ade80', down: '#fb7185' }
         }
       };
       const STORAGE_KEY = 'better-diary-local-v1';
@@ -1241,7 +1272,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       const CUSTOM_TAGS_KEY = 'better-diary-event-tags-v1';
       const HIGHLIGHT_OVERRIDES = { '2026-10-23': '何宇峻结婚' };
       let BIRTHDAYS = [];
-      let CUSTOM_TAGS = [{ id: 'school', name: '上学', color: '#5f9c76' }];
+      let CUSTOM_TAGS = [
+        { id: 'school', name: '上学', color: '#5f9c76' },
+        { id: 'period', name: '大姨妈', color: '#d76b86' }
+      ];
       try {
         const savedBirthdays = JSON.parse(localStorage.getItem(BIRTHDAYS_KEY) || '[]');
         if (Array.isArray(savedBirthdays)) BIRTHDAYS = savedBirthdays;
@@ -1417,7 +1451,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       let state = { screen: 'calendar', filter: null, tagFilter: null, searchScope: null, activeDate: todayKey, listening: false, step: 0, timer: null, transcript: '', spoken: [], justWritten: false };
 
       const sortedDates = () => Object.keys(DAYS).sort((a, b) => a - b);
-      const entry = key => DAYS[key] || (DAYS[key] = { wd: weekdayOf(key), wx: '晴', loc: '上海', main: 'calm', sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
+      const entry = key => DAYS[key] || (DAYS[key] = { wd: weekdayOf(key), wx: '晴', loc: '上海', main: null, sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
 
       let saveTimer = null;
       function saveEntries(announce) {
@@ -1466,9 +1500,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           });
           row.appendChild(r);
         };
-        buildRow(DIMS.filter(d => d.tone === 'warm'));
-        buildRow(DIMS.filter(d => d.tone === 'cool'));
-        if (CUSTOM_TAGS.length) {
+        buildRow(DEFAULT_FILTER_KEYS.map(key => dimOf[key]));
+        {
           const r = el('div', 'event-filter-row', '');
           CUSTOM_TAGS.forEach(tag => {
             const b = el('button', 'f-chip tag-chip' + (state.tagFilter === tag.id ? ' on' : ''), '');
@@ -1555,7 +1588,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         grid.innerHTML = '';
         grid.classList.toggle('filtering', !!(state.filter || state.tagFilter));
         grid.classList.remove('fade'); void grid.offsetWidth; grid.classList.add('fade');
-        const colorKeys = e => e.colors || [e.main, e.sub, e.extra].filter(Boolean);
+        const colorKeys = e => Array.from(new Set((e.colors || [e.main, e.sub, e.extra].filter(Boolean)).map(projectDimKey)));
         $('#yearEdit').textContent = currentYear + '年';
         $('#monthEdit').textContent = (currentMonth + 1) + '月';
         const first = new Date(currentYear, currentMonth, 1);
@@ -1677,7 +1710,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         }
         const e = entry(key);
         const observance = calendarObservance(key);
-        $('#sDot').style.background = dimOf[e.main].color;
+        $('#sDot').hidden = !e.main;
+        $('#sDot').style.background = e.main ? dimOf[projectDimKey(e.main)].color : 'transparent';
         $('#sDate').textContent = monthDayOf(key) + ' · ' + e.wd;
         $('#sMeta').textContent = (observance.full.length ? observance.full.join(' · ') + ' · ' : '') + e.wx + ' · ' + e.loc + ' · ' + visLabel(e);
         $('#sHighlight').value = extractDayHighlight(e, key);
@@ -1713,6 +1747,67 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       function closeSheet() {
         $('#scrim').classList.remove('show');
         $('#sheet').classList.remove('open');
+      }
+
+      function clearPlaceholderContent(e) {
+        if (e.content && e.content.length === 1 && e.content[0] === '今天想记录点什么，点麦克风直接说。') {
+          e.content = [];
+          e.segments = null;
+          $('#contentArea').innerHTML = '';
+        }
+      }
+
+      function renderEntryColors(key) {
+        const e = entry(key);
+        const wrap = $('#entryColorPicker');
+        wrap.innerHTML = '';
+        DEFAULT_FILTER_KEYS.map(dimKey => dimOf[dimKey]).forEach(dim => {
+          const selected = !!e.main && projectDimKey(e.main) === dim.key;
+          const button = el('button', 'entry-color' + (selected ? ' on' : ''), '');
+          button.type = 'button';
+          button.style.setProperty('--ec', dim.color);
+          const dot = el('span', 'dot');
+          button.appendChild(dot);
+          button.appendChild(document.createTextNode(dim.name));
+          button.addEventListener('click', () => {
+            const next = selected ? null : dim.key;
+            e.main = next;
+            e.sub = null;
+            e.extra = null;
+            e.colors = null;
+            clearPlaceholderContent(e);
+            saveEntries(false);
+            renderEntryColors(key);
+            renderCalendar();
+            showToast(next ? '已标记为「' + dim.name + '」' : '已清除情绪颜色');
+          });
+          wrap.appendChild(button);
+        });
+        CUSTOM_TAGS.forEach(tag => {
+          const selected = Array.isArray(e.tags) && e.tags.includes(tag.id);
+          const button = el('button', 'entry-color custom' + (selected ? ' on' : ''), '');
+          button.type = 'button';
+          button.style.setProperty('--ec', tag.color);
+          const dot = el('span', 'dot');
+          button.appendChild(dot);
+          button.appendChild(document.createTextNode(tag.name));
+          button.addEventListener('click', () => {
+            e.tags = Array.isArray(e.tags) ? e.tags : [];
+            const index = e.tags.indexOf(tag.id);
+            if (index >= 0) e.tags.splice(index, 1);
+            else e.tags.push(tag.id);
+            clearPlaceholderContent(e);
+            saveEntries(false);
+            renderEntryColors(key);
+            renderCalendar();
+            showToast(selected ? '已取消「' + tag.name + '」' : '已标记「' + tag.name + '」');
+          });
+          wrap.appendChild(button);
+        });
+        const manage = el('button', 'entry-color manage', '+ 自定义');
+        manage.type = 'button';
+        manage.addEventListener('click', openTagManager);
+        wrap.appendChild(manage);
       }
 
       function renderSheetTags(key) {
@@ -1777,6 +1872,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           c.style.setProperty('--kcolor', dimOf[k[1]].color);
           kwRow.appendChild(c);
         });
+        renderEntryColors(key);
         $('#contentArea').className = 'content ' + FONTS[fontLevel].c;
         const ms = $('#mediaSec');
         ms.hidden = false;
@@ -1889,7 +1985,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         v.classList.remove('open', 'landed');
       }
 
-      const dayColorKeys = e => e.colors || [e.main, e.sub, e.extra].filter(Boolean);
+      const dayColorKeys = e => Array.from(new Set((e.colors || [e.main, e.sub, e.extra].filter(Boolean)).map(projectDimKey)));
       const dayText = e => e.segments ? e.segments.map(s => s.text).join(' ') : e.content.join(' ');
 
       function capHighlightLabel(text, maxLength = 9) {
@@ -2042,13 +2138,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       }
 
       function inferImportDimension(text) {
-        if (/开心|高兴|快乐|幸福|惊喜|顺利|喜欢|好吃|成功/.test(text)) return 'happy';
-        if (/生气|愤怒|争吵|吵架|烦躁|气死/.test(text)) return 'angry';
-        if (/想念|思念|梦见|怀念/.test(text)) return 'miss';
-        if (/低落|难过|伤心|失望|沮丧|累/.test(text)) return 'down';
-        if (/旅行|出发|到了|路上|公园|散步/.test(text)) return 'out';
-        if (/陪|见面|朋友|家人|一起|聊天/.test(text)) return 'together';
-        return 'calm';
+        if (/生气|愤怒|争吵|吵架|烦躁|不爽|气死/.test(text)) return 'angry';
+        if (/低落|难过|伤心|失望|沮丧|想念|思念|梦见|怀念|累/.test(text)) return 'down';
+        return 'happy';
       }
 
       function cleanImportParagraphs(lines) {
@@ -2250,10 +2342,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           }
           const existingSegments = existing.segments && existing.segments.length
             ? existing.segments
-            : existing.content.map(text => ({ time: '', dim: existing.main || 'calm', text, kws: [] }));
+            : existing.content.map(text => ({ time: '', dim: projectDimKey(existing.main || 'happy'), text, kws: [] }));
           const incomingSegments = incoming.segments && incoming.segments.length
             ? incoming.segments
-            : incoming.content.map(text => ({ time: '', dim: incoming.main || 'calm', text, kws: [] }));
+            : incoming.content.map(text => ({ time: '', dim: projectDimKey(incoming.main || 'happy'), text, kws: [] }));
           const seen = new Set();
           existing.segments = existingSegments.concat(incomingSegments).filter(segment => {
             const key = (segment.time || '') + '\n' + segment.text.trim();
@@ -2284,6 +2376,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         renderFilters();
         renderCalendar();
         if (state.sheetDate && $('#sheet').classList.contains('open')) renderSheetTags(state.sheetDate);
+        if (state.screen === 'diary') renderEntryColors(state.activeDate);
       }
 
       function renderTagManager() {
@@ -2639,11 +2732,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             groups.push({ topic, text: s.clean, kws: idx >= 0 ? SCRIPT_KWS[idx].slice() : [] });
           }
         });
-        const personDim = { 小王: 'together', 妈妈: 'miss', 供应商: 'angry', 外婆: 'miss' };
+        const personDim = { 小王: 'happy', 妈妈: 'down', 供应商: 'angry', 外婆: 'down' };
         const segDims = groups.map(g => {
           const who = g.text.includes('小王') ? '小王' : g.text.includes('妈妈') ? '妈妈' : g.text.includes('供应商') ? '供应商' : g.text.includes('外婆') ? '外婆' : '';
           if (who && personDim[who]) return personDim[who];
-          return (g.text.includes('饭') || g.text.includes('好吃')) ? 'happy' : 'calm';
+          return 'happy';
         });
         const badgeText = '已去除 ' + fillers + ' 处口头语 · 按文义分为 ' + groups.length + ' 段 · 内容未变';
         card.innerHTML =
@@ -2655,7 +2748,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           '</div>';
         e.content = cleanText ? cleanText.split(/(?<=。)/g).filter(Boolean) : e.content;
         if (cleanText) {
-          e.main = e.main || segDims[0] || 'calm';
+          e.main = projectDimKey(e.main || segDims[0] || 'happy');
           e.sub = e.sub || segDims[1] || null;
           e.extra = null;
           const nowTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
