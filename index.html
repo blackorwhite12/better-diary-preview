@@ -261,7 +261,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .streak-cap { font-size: 9px; color: var(--ink-soft); }
     #diary-mock .cal-head h2 { flex: 1; text-align: center; font-size: 17px; font-weight: 600; margin: 0; white-space: nowrap; }
     #diary-mock .cal-head h2 #yearEdit, #diary-mock .cal-head h2 #monthEdit { display: inline-block; }
-    #diary-mock .cal-head h2 .cal-title { display: inline-block; min-width: 9em; text-align: center; }
+    #diary-mock .cal-head h2 .cal-title {
+      display: inline-flex; align-items: baseline; justify-content: center; gap: .45em;
+      min-width: 0; text-align: center;
+    }
     #diary-mock .cal-head h2 [data-edit] { cursor: pointer; border-radius: 6px; padding: 0 5px; transition: background .2s; }
     #diary-mock .cal-head h2 [data-edit]:hover { background: rgba(120, 100, 70, .12); }
     #diary-mock .nav { flex: 1; display: flex; justify-content: flex-end; gap: 10px; }
@@ -294,27 +297,35 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       outline: none; padding: 1px 3px; font-family: inherit;
     }
     #diary-mock .filter-note { text-align: center; font-size: 11px; color: var(--ink-soft); padding: 3px 12px 0; }
-    #diary-mock .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); padding: 4px 14px 2px; margin-top: 14px; }
-    #diary-mock .weekdays span { text-align: center; font-size: 10px; color: var(--ink-soft); opacity: .72; }
+    #diary-mock .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); padding: 4px 14px 2px; margin-top: 10px; }
+    #diary-mock .weekdays span { text-align: center; font-size: 10px; font-weight: 500; color: var(--ink-soft); opacity: .82; letter-spacing: .08em; }
     #diary-mock .weekdays span.we { color: light-dark(#c08a5f, #c99970); }
-    #diary-mock .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 8px 14px 0; flex: 1; }
+    #diary-mock .grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: clamp(62px, 9.2vh, 84px); align-content: start;
+      gap: 3px 4px; padding: 8px 14px 0; flex: 1;
+    }
     @keyframes gridfade { from { opacity: 0; } to { opacity: 1; } }
     #diary-mock .grid.fade { animation: gridfade .22s ease; }
     #diary-mock .day {
       border: none; background: transparent; border-radius: 12px; cursor: pointer; position: relative;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-      min-height: 0; padding: 2px 0; color: var(--ink); transition: transform .12s ease, background .2s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      min-height: 0; padding: 5px 0 3px; color: var(--ink); transition: transform .12s ease, background .2s;
     }
     #diary-mock .day:active { transform: scale(.92); }
-    #diary-mock .day .num { font-size: 14px; font-weight: 600; line-height: 1.1; }
+    #diary-mock .day .num {
+      font-size: 15px; font-weight: 600; line-height: 1.1;
+      font-variant-numeric: tabular-nums; letter-spacing: -.01em;
+    }
     #diary-mock .day .day-label {
-      max-width: calc(100% - 6px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      padding: 1px 5px; border-radius: 999px; font-size: 9px; line-height: 1.35; color: var(--ink);
-      background: color-mix(in srgb, var(--gold) 18%, var(--paper)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 28%, transparent);
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      padding: 0 1px; font-size: 10px; line-height: 1.35; font-weight: 500;
+      color: color-mix(in srgb, var(--ink) 82%, var(--gold)); letter-spacing: .01em;
     }
     #diary-mock .day .day-observance {
       max-width: calc(100% - 8px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      font-size: 8px; line-height: 1.25; color: light-dark(#a8442e, #e0937c); font-weight: 600;
+      margin-top: 1px; font-size: 9px; line-height: 1.2;
+      color: light-dark(#a8442e, #e0937c); font-weight: 500; letter-spacing: .02em;
     }
     #diary-mock .day .day-rest {
       position: absolute; top: 2px; left: 3px; min-width: 13px; height: 13px; padding: 0 2px;
@@ -326,10 +337,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       border-radius: 5px; font-size: 7px; line-height: 13px; text-align: center;
       color: #fff; background: #5c708c;
     }
-    #diary-mock .day.has-observance .dots { height: 10px; overflow: hidden; }
-    #diary-mock .day .dots { display: flex; flex-direction: column; gap: 2px; height: 33px; align-items: center; justify-content: flex-start; }
-    #diary-mock .grid.seven .day .dots { height: 47px; }
-    #diary-mock .grid.filtering .day .dots { height: 47px; }
+    #diary-mock .day .dots {
+      display: flex; flex-direction: row; gap: 3px; height: 7px;
+      align-items: center; justify-content: center; margin-top: 1px;
+    }
+    #diary-mock .grid.seven .day .dots, #diary-mock .grid.filtering .day .dots { height: 7px; }
     #diary-mock .day .dots i { width: 5px; height: 5px; border-radius: 50%; display: block; }
     #diary-mock .day .dots i.sub { width: 5px; height: 5px; }
     #diary-mock .day .more-dots { position: absolute; right: 2px; bottom: 1px; font-size: 6px; font-weight: 600; color: var(--ink-soft); }
@@ -1265,7 +1277,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         birthdaysForDate(key).forEach(add);
         if (holiday) result.badge = holiday.isWork() ? '班' : '休';
         result.full = names;
-        result.label = names[0] || '';
+        const shortNames = {
+          '全民国防教育日': '国防教育',
+          '中国人民警察节': '警察节',
+          '中国农民丰收节': '丰收节',
+          '全国防灾减灾日': '防灾减灾'
+        };
+        result.label = shortNames[names[0]] || names[0] || '';
         return result;
       }
       const DAYS = {};
