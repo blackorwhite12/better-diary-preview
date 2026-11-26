@@ -449,6 +449,51 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       font-size: 14px; font-weight: 600; cursor: pointer;
     }
     #diary-mock .import-confirm:disabled { opacity: .45; }
+    #diary-mock .event-filter-row { display: flex; justify-content: center; gap: 6px; padding-top: 5px; flex-wrap: wrap; }
+    #diary-mock .tag-chip { border-style: solid; }
+    #diary-mock .s-tag-row {
+      display: flex; align-items: center; gap: 7px; margin: 7px 0; min-height: 24px;
+    }
+    #diary-mock .s-tag-row > label { flex: 0 0 auto; font-size: 11px; color: var(--ink-soft); }
+    #diary-mock .s-tags { flex: 1; display: flex; align-items: center; gap: 5px; overflow-x: auto; scrollbar-width: none; }
+    #diary-mock .s-tags::-webkit-scrollbar { display: none; }
+    #diary-mock .s-tag, #diary-mock .s-tag-add {
+      flex: 0 0 auto; border: 1px solid var(--line); border-radius: 999px; background: transparent;
+      color: var(--ink-soft); font-size: 10px; padding: 4px 8px; cursor: pointer;
+    }
+    #diary-mock .s-tag.on { color: var(--tag); border-color: var(--tag); background: color-mix(in srgb, var(--tag) 13%, transparent); }
+    #diary-mock .tag-manager-list { display: flex; flex-direction: column; gap: 7px; }
+    #diary-mock .tag-manager-row {
+      display: grid; grid-template-columns: 28px minmax(0, 1fr) 36px 28px; gap: 7px; align-items: center;
+      padding: 7px 9px; border-radius: 12px; background: var(--paper-deep); box-shadow: inset 0 0 0 1px var(--line);
+    }
+    #diary-mock .tag-manager-row input[type="text"] {
+      min-width: 0; border: none; outline: none; background: transparent; color: var(--ink);
+      font: 12px/1.3 inherit;
+    }
+    #diary-mock .tag-manager-row input[type="color"] {
+      width: 34px; height: 26px; padding: 0; border: none; border-radius: 7px; background: transparent; cursor: pointer;
+    }
+    #diary-mock .tag-swatch {
+      width: 18px; height: 18px; margin: auto; border-radius: 50%;
+      background: var(--swatch); box-shadow: 0 0 0 2px color-mix(in srgb, var(--swatch) 22%, transparent);
+    }
+    #diary-mock .tag-delete {
+      width: 27px; height: 27px; border: none; border-radius: 50%; background: var(--chip); color: var(--ink-soft);
+      font-size: 15px; cursor: pointer;
+    }
+    #diary-mock .tag-add-row { display: grid; grid-template-columns: minmax(0, 1fr) 38px 74px; gap: 7px; margin-top: 10px; }
+    #diary-mock .tag-add-row input[type="text"] {
+      min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+      background: rgba(255,255,255,.5); color: var(--ink); font: 12px/1.2 inherit; outline: none;
+    }
+    #diary-mock .tag-add-row input[type="color"] {
+      width: 38px; height: 38px; padding: 0; border: none; border-radius: 10px; background: transparent;
+    }
+    #diary-mock .tag-add-row button {
+      border: none; border-radius: 10px; background: linear-gradient(135deg, #eed9a8, #d8ad5f);
+      color: #4a3215; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
     #diary-mock .s-result {
       display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px;
       background: var(--paper-deep); box-shadow: inset 0 0 0 1px var(--line);
@@ -1027,6 +1072,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <input type="text" id="sHighlight" maxlength="9" placeholder="最多 3 行">
           <button type="button" id="sHighlightSave">保存</button>
         </div>
+        <div class="s-tag-row">
+          <label>事件标记</label>
+          <div class="s-tags" id="sTags"></div>
+        </div>
         <div class="s-media" id="sMedia" hidden></div>
         <div class="s-kws" id="sKws"></div>
         <div class="s-snip" id="sSnip"></div>
@@ -1113,6 +1162,23 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         </div>
       </div>
 
+      <div class="import-view" id="tagView">
+        <div class="import-top">
+          <button type="button" class="otd-close" id="tagClose" aria-label="关闭标记管理">×</button>
+          <span class="import-title">事件标记</span>
+          <span class="otd-top-spacer"></span>
+        </div>
+        <div class="import-body">
+          <div class="import-note">事件标记独立于情绪颜色，可用于日历筛选和统计。一天可以添加多个标记。</div>
+          <div class="tag-manager-list" id="tagManagerList"></div>
+          <div class="tag-add-row">
+            <input type="text" id="tagName" maxlength="8" placeholder="如：上学">
+            <input type="color" id="tagColor" value="#5f9c76" aria-label="标记颜色">
+            <button type="button" id="tagAdd">新增标记</button>
+          </div>
+        </div>
+      </div>
+
       <div class="share-view" id="shareView">
         <div class="share-card">
           <div class="share-top"><span id="shareDate">8月9日 · 今天</span><span class="share-seal">留</span></div>
@@ -1172,11 +1238,17 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       const STORAGE_KEY = 'better-diary-local-v1';
       const PREFS_KEY = 'better-diary-prefs-v1';
       const BIRTHDAYS_KEY = 'better-diary-birthdays-v1';
+      const CUSTOM_TAGS_KEY = 'better-diary-event-tags-v1';
       const HIGHLIGHT_OVERRIDES = { '2026-10-23': '何宇峻结婚' };
       let BIRTHDAYS = [];
+      let CUSTOM_TAGS = [{ id: 'school', name: '上学', color: '#5f9c76' }];
       try {
         const savedBirthdays = JSON.parse(localStorage.getItem(BIRTHDAYS_KEY) || '[]');
         if (Array.isArray(savedBirthdays)) BIRTHDAYS = savedBirthdays;
+      } catch (_) {}
+      try {
+        const savedTags = JSON.parse(localStorage.getItem(CUSTOM_TAGS_KEY) || 'null');
+        if (Array.isArray(savedTags)) CUSTOM_TAGS = savedTags;
       } catch (_) {}
       let theme = 'warm';
       try {
@@ -1342,7 +1414,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const charWrap = t => Array.from(t).map((c, i) => '<span class="ch" style="--i:' + Math.min(i, 40) + '">' + (c === ' ' ? '&nbsp;' : esc(c)) + '</span>').join('');
 
-      let state = { screen: 'calendar', filter: null, searchScope: null, activeDate: todayKey, listening: false, step: 0, timer: null, transcript: '', spoken: [], justWritten: false };
+      let state = { screen: 'calendar', filter: null, tagFilter: null, searchScope: null, activeDate: todayKey, listening: false, step: 0, timer: null, transcript: '', spoken: [], justWritten: false };
 
       const sortedDates = () => Object.keys(DAYS).sort((a, b) => a - b);
       const entry = key => DAYS[key] || (DAYS[key] = { wd: weekdayOf(key), wx: '晴', loc: '上海', main: 'calm', sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
@@ -1364,6 +1436,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => saveEntries(false), 450);
       }
+      function saveCustomTags() {
+        try { localStorage.setItem(CUSTOM_TAGS_KEY, JSON.stringify(CUSTOM_TAGS)); }
+        catch (err) { console.error(err); showToast('标记保存失败'); }
+      }
 
       function icons() { if (window.lucide) lucide.createIcons({ attrs: { width: 16, height: 16 } }); }
 
@@ -1382,6 +1458,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             b.appendChild(dot); b.appendChild(document.createTextNode(d.name));
             b.addEventListener('click', () => {
               if (suppressChipClick) { suppressChipClick = false; return; }
+              state.tagFilter = null;
               state.filter = state.filter === d.key ? null : d.key;
               renderFilters(); renderCalendar();
             });
@@ -1391,6 +1468,31 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         };
         buildRow(DIMS.filter(d => d.tone === 'warm'));
         buildRow(DIMS.filter(d => d.tone === 'cool'));
+        if (CUSTOM_TAGS.length) {
+          const r = el('div', 'event-filter-row', '');
+          CUSTOM_TAGS.forEach(tag => {
+            const b = el('button', 'f-chip tag-chip' + (state.tagFilter === tag.id ? ' on' : ''), '');
+            b.type = 'button';
+            b.style.setProperty('--fc', tag.color);
+            b.setAttribute('aria-pressed', state.tagFilter === tag.id ? 'true' : 'false');
+            const dot = el('span', 'dot');
+            dot.style.background = tag.color;
+            b.appendChild(dot);
+            b.appendChild(document.createTextNode(tag.name));
+            b.addEventListener('click', () => {
+              state.filter = null;
+              state.tagFilter = state.tagFilter === tag.id ? null : tag.id;
+              renderFilters();
+              renderCalendar();
+            });
+            r.appendChild(b);
+          });
+          const add = el('button', 'f-chip tag-chip', '+ 标记');
+          add.type = 'button';
+          add.addEventListener('click', openTagManager);
+          r.appendChild(add);
+          row.appendChild(r);
+        }
       }
 
       let suppressChipClick = false, chipHold = null;
@@ -1451,7 +1553,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       function renderCalendar() {
         const grid = $('#calendarGrid');
         grid.innerHTML = '';
-        grid.classList.toggle('filtering', !!state.filter);
+        grid.classList.toggle('filtering', !!(state.filter || state.tagFilter));
         grid.classList.remove('fade'); void grid.offsetWidth; grid.classList.add('fade');
         const colorKeys = e => e.colors || [e.main, e.sub, e.extra].filter(Boolean);
         $('#yearEdit').textContent = currentYear + '年';
@@ -1471,7 +1573,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const maxDots = rowH >= 62 ? 7 : 5;
         grid.classList.toggle('seven', maxDots === 7);
         const note = $('#filterNote');
-        if (state.filter) {
+        if (state.tagFilter) {
+          const tag = CUSTOM_TAGS.find(item => item.id === state.tagFilter);
+          const n = monthKeys.filter(k => (DAYS[k].tags || []).includes(state.tagFilter)).length;
+          note.textContent = '本月 ' + n + ' 天「' + (tag ? tag.name : '标记') + '」· 再点标记取消';
+        } else if (state.filter) {
           const n = monthKeys.filter(k => colorKeys(DAYS[k]).includes(state.filter)).length;
           note.textContent = '本月 ' + n + ' 天「' + dimOf[state.filter].name + '」· 再点色块取消';
         } else {
@@ -1489,26 +1595,31 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           const topline = el('span', 'day-topline', '');
           const termSlot = el('span', 'term' + (slots.term ? '' : ' empty'), slots.term || '');
           const festivalSlot = el('span', 'festival' + (slots.festival ? '' : ' empty'), slots.festival || '');
+          const firstTag = e && Array.isArray(e.tags) ? CUSTOM_TAGS.find(tag => e.tags.includes(tag.id)) : null;
+          const tagText = firstTag ? Array.from(firstTag.name).slice(0, 2).join('') : '';
+          const displayedOther = !observance.badge && tagText ? tagText : slots.other;
           const otherTone = observance.badge === '休' ? ' rest' : observance.badge === '班' ? ' work' : '';
-          const otherSlot = el('span', 'other' + otherTone + (slots.other ? '' : ' empty'), slots.other || '');
+          const otherSlot = el('span', 'other' + otherTone + (tagText && !observance.badge ? ' tag-color' : '') + (displayedOther ? '' : ' empty'), displayedOther || '');
+          if (tagText && !observance.badge && firstTag) otherSlot.style.color = firstTag.color;
           topline.appendChild(termSlot);
           topline.appendChild(festivalSlot);
           topline.appendChild(otherSlot);
           b.appendChild(topline);
           const num = el('span', 'num', String(d));
           b.appendChild(num);
-          if (slots.term || slots.festival || slots.other) {
+          if (slots.term || slots.festival || displayedOther) {
             b.classList.add('has-observance');
-            topline.title = observance.full.join(' · ');
+            topline.title = observance.full.concat(firstTag && !observance.badge ? [firstTag.name] : []).join(' · ');
           }
           if (e) {
             b.classList.add('has');
-            let hit = false;
+            let hit = true;
             if (state.filter) hit = colorKeys(e).includes(state.filter);
-            else hit = true;
-            if (state.filter && !hit) b.classList.add('dim');
-            if (state.filter && hit) {
-              b.style.setProperty('--hit', dimOf[state.filter].color);
+            else if (state.tagFilter) hit = (e.tags || []).includes(state.tagFilter);
+            if ((state.filter || state.tagFilter) && !hit) b.classList.add('dim');
+            if ((state.filter || state.tagFilter) && hit) {
+              const tag = state.tagFilter && CUSTOM_TAGS.find(item => item.id === state.tagFilter);
+              b.style.setProperty('--hit', tag ? tag.color : dimOf[state.filter].color);
               b.classList.add('hit');
             }
             const dots = el('span', 'dots', '');
@@ -1516,10 +1627,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             const dotKeys = colorKeys(e);
             const toneRank = d => (dimOf[d].tone === 'warm' ? 0 : 1);
             dotKeys.sort((a, b) => toneRank(a) - toneRank(b));
-            const visible = state.filter ? dotKeys : dotKeys.slice(0, maxDots);
+            const visible = (state.filter || state.tagFilter) ? dotKeys : dotKeys.slice(0, maxDots);
             visible.forEach(c => dots.appendChild(mk(c)));
             b.appendChild(dots);
-            if (!state.filter && dotKeys.length > maxDots) b.appendChild(el('span', 'more-dots', '+' + (dotKeys.length - maxDots)));
+            if (!state.filter && !state.tagFilter && dotKeys.length > maxDots) b.appendChild(el('span', 'more-dots', '+' + (dotKeys.length - maxDots)));
             if (e.media && e.media.photos && e.media.photos.length) {
               const flag = el('span', 'mflag', '');
               const fi = el('i', '');
@@ -1570,6 +1681,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         $('#sDate').textContent = monthDayOf(key) + ' · ' + e.wd;
         $('#sMeta').textContent = (observance.full.length ? observance.full.join(' · ') + ' · ' : '') + e.wx + ' · ' + e.loc + ' · ' + visLabel(e);
         $('#sHighlight').value = extractDayHighlight(e, key);
+        renderSheetTags(key);
         const hasMedia = e.media && e.media.photos && e.media.photos.length;
         const sm = $('#sMedia');
         if (hasMedia) {
@@ -1601,6 +1713,33 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       function closeSheet() {
         $('#scrim').classList.remove('show');
         $('#sheet').classList.remove('open');
+      }
+
+      function renderSheetTags(key) {
+        const e = entry(key);
+        const wrap = $('#sTags');
+        wrap.innerHTML = '';
+        CUSTOM_TAGS.forEach(tag => {
+          const selected = Array.isArray(e.tags) && e.tags.includes(tag.id);
+          const button = el('button', 's-tag' + (selected ? ' on' : ''), '');
+          button.type = 'button';
+          button.style.setProperty('--tag', tag.color);
+          button.textContent = tag.name;
+          button.addEventListener('click', () => {
+            e.tags = Array.isArray(e.tags) ? e.tags : [];
+            const index = e.tags.indexOf(tag.id);
+            if (index >= 0) e.tags.splice(index, 1);
+            else e.tags.push(tag.id);
+            saveEntries(false);
+            renderSheetTags(key);
+            renderCalendar();
+          });
+          wrap.appendChild(button);
+        });
+        const add = el('button', 's-tag-add', '+ 管理');
+        add.type = 'button';
+        add.addEventListener('click', openTagManager);
+        wrap.appendChild(add);
       }
 
       function showScreen(name) {
@@ -2139,6 +2278,94 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
       function closeImport() {
         $('#importView').classList.remove('open');
+      }
+
+      function refreshTagDependentViews() {
+        renderFilters();
+        renderCalendar();
+        if (state.sheetDate && $('#sheet').classList.contains('open')) renderSheetTags(state.sheetDate);
+      }
+
+      function renderTagManager() {
+        const list = $('#tagManagerList');
+        list.innerHTML = '';
+        if (!CUSTOM_TAGS.length) list.appendChild(el('div', 'import-summary', '还没有自定义标记'));
+        CUSTOM_TAGS.forEach(tag => {
+          const row = el('div', 'tag-manager-row', '');
+          const swatch = el('span', 'tag-swatch', '');
+          swatch.style.setProperty('--swatch', tag.color);
+          const name = el('input', '');
+          name.type = 'text';
+          name.maxLength = 8;
+          name.value = tag.name;
+          const color = el('input', '');
+          color.type = 'color';
+          color.value = tag.color;
+          color.setAttribute('aria-label', '修改颜色');
+          const remove = el('button', 'tag-delete', '×');
+          remove.type = 'button';
+          remove.setAttribute('aria-label', '删除标记 ' + tag.name);
+          name.addEventListener('change', () => {
+            const value = name.value.trim().slice(0, 8);
+            if (!value) { name.value = tag.name; return; }
+            tag.name = value;
+            saveCustomTags();
+            refreshTagDependentViews();
+          });
+          color.addEventListener('input', () => {
+            tag.color = color.value;
+            swatch.style.setProperty('--swatch', color.value);
+            saveCustomTags();
+            refreshTagDependentViews();
+          });
+          remove.addEventListener('click', () => {
+            if (!confirm('删除标记「' + tag.name + '」？相关日期上的这个标记也会移除。')) return;
+            CUSTOM_TAGS = CUSTOM_TAGS.filter(item => item.id !== tag.id);
+            Object.values(DAYS).forEach(entryValue => {
+              if (Array.isArray(entryValue.tags)) entryValue.tags = entryValue.tags.filter(id => id !== tag.id);
+            });
+            if (state.tagFilter === tag.id) state.tagFilter = null;
+            saveCustomTags();
+            saveEntries(false);
+            renderTagManager();
+            refreshTagDependentViews();
+          });
+          row.appendChild(swatch);
+          row.appendChild(name);
+          row.appendChild(color);
+          row.appendChild(remove);
+          list.appendChild(row);
+        });
+      }
+
+      function openTagManager() {
+        renderTagManager();
+        $('#tagView').classList.add('open');
+        icons();
+      }
+
+      function closeTagManager() {
+        $('#tagView').classList.remove('open');
+      }
+
+      function addCustomTag() {
+        const nameInput = $('#tagName');
+        const name = nameInput.value.trim().slice(0, 8);
+        if (!name) {
+          showToast('先输入标记名称');
+          nameInput.focus();
+          return;
+        }
+        CUSTOM_TAGS.push({
+          id: 'tag-' + Date.now(),
+          name,
+          color: $('#tagColor').value
+        });
+        nameInput.value = '';
+        saveCustomTags();
+        renderTagManager();
+        refreshTagDependentViews();
+        showToast('已新增标记：' + name);
       }
 
       function decodeImportedFile(text) {
@@ -2738,6 +2965,14 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         state.sheetDate = latest;
         openSheet(latest);
         showToast('已导入 ' + (result.added + result.merged) + ' 篇到对应日期');
+      });
+      $('#tagClose').addEventListener('click', closeTagManager);
+      $('#tagAdd').addEventListener('click', addCustomTag);
+      $('#tagName').addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          addCustomTag();
+        }
       });
       $('#searchBtn').addEventListener('click', () => { closeSheet(); openSearch(); });
       $('#searchClose').addEventListener('click', closeSearch);
