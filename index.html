@@ -302,31 +302,38 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .weekdays span.we { color: light-dark(#c08a5f, #c99970); }
     #diary-mock .grid {
       display: grid; grid-template-columns: repeat(7, 1fr);
-      grid-auto-rows: clamp(62px, 9.2vh, 84px); align-content: start;
-      gap: 3px 4px; padding: 8px 14px 0; flex: 1;
+      grid-auto-rows: clamp(76px, 9.5vh, 84px); align-content: start;
+      gap: 5px; padding: 8px 14px 0; flex: 1;
     }
     @keyframes gridfade { from { opacity: 0; } to { opacity: 1; } }
     #diary-mock .grid.fade { animation: gridfade .22s ease; }
     #diary-mock .day {
-      border: none; background: transparent; border-radius: 12px; cursor: pointer; position: relative;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-      min-height: 0; padding: 5px 0 3px; color: var(--ink); transition: transform .12s ease, background .2s;
+      border: none; border-radius: 11px; cursor: pointer; position: relative;
+      background: color-mix(in srgb, var(--paper) 88%, #fff);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 62%, transparent);
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0;
+      min-height: 0; padding: 5px 1px 3px; color: var(--ink); transition: transform .12s ease, background .2s;
     }
+    #diary-mock .day.outside { background: transparent; box-shadow: none; pointer-events: none; }
+    #diary-mock .day.has { background: color-mix(in srgb, var(--paper) 94%, var(--gold) 6%); }
     #diary-mock .day:active { transform: scale(.92); }
     #diary-mock .day .num {
-      font-size: 15px; font-weight: 600; line-height: 1.1;
+      height: 18px; font-size: 15px; font-weight: 600; line-height: 18px;
       font-variant-numeric: tabular-nums; letter-spacing: -.01em;
     }
     #diary-mock .day .day-label {
-      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      padding: 0 1px; font-size: 10px; line-height: 1.35; font-weight: 500;
-      color: color-mix(in srgb, var(--ink) 82%, var(--gold)); letter-spacing: .01em;
+      width: 100%; height: 34px; overflow: hidden; padding: 0 1px; box-sizing: border-box;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      font-size: 9.5px; line-height: 11.3px; font-weight: 500; white-space: nowrap;
+      color: color-mix(in srgb, var(--ink) 84%, var(--gold)); letter-spacing: .06em;
     }
+    #diary-mock .day .day-label span { display: block; }
     #diary-mock .day .day-observance {
-      max-width: calc(100% - 8px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      margin-top: 1px; font-size: 9px; line-height: 1.2;
+      width: 100%; height: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size: 9px; line-height: 11px; text-align: center;
       color: light-dark(#a8442e, #e0937c); font-weight: 500; letter-spacing: .02em;
     }
+    #diary-mock .day .empty { visibility: hidden; }
     #diary-mock .day .day-rest {
       position: absolute; top: 2px; left: 3px; min-width: 13px; height: 13px; padding: 0 2px;
       border-radius: 5px; font-size: 7px; line-height: 13px; text-align: center;
@@ -338,20 +345,28 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       color: #fff; background: #5c708c;
     }
     #diary-mock .day .dots {
-      display: flex; flex-direction: row; gap: 3px; height: 7px;
-      align-items: center; justify-content: center; margin-top: 1px;
+      display: flex; flex-direction: row; gap: 3px; height: 8px;
+      align-items: center; justify-content: center; margin: 0;
     }
-    #diary-mock .grid.seven .day .dots, #diary-mock .grid.filtering .day .dots { height: 7px; }
+    #diary-mock .grid.seven .day .dots, #diary-mock .grid.filtering .day .dots { height: 8px; }
     #diary-mock .day .dots i { width: 5px; height: 5px; border-radius: 50%; display: block; }
     #diary-mock .day .dots i.sub { width: 5px; height: 5px; }
     #diary-mock .day .more-dots { position: absolute; right: 2px; bottom: 1px; font-size: 6px; font-weight: 600; color: var(--ink-soft); }
-    #diary-mock .day.today { box-shadow: none; background: transparent; }
+    #diary-mock .day.today {
+      background: color-mix(in srgb, var(--paper) 94%, var(--gold) 6%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 38%, transparent);
+    }
     #diary-mock .day.today .num {
-      min-width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 50%; color: #4a3215; background: var(--gold);
+      position: relative; z-index: 1; min-width: 34px; height: 18px;
+      display: inline-flex; align-items: center; justify-content: center; color: #4a3215;
+    }
+    #diary-mock .day.today .num::before {
+      content: ''; position: absolute; z-index: -1; left: 50%; top: 50%;
+      width: 24px; height: 24px; transform: translate(-50%, -50%);
+      border-radius: 50%; background: var(--gold);
     }
     #diary-mock .day.today::after {
-      content: '今'; position: absolute; top: calc(50% - 35px); right: calc(50% - 25px);
+      content: '今'; position: absolute; top: 4px; right: calc(50% - 25px);
       font-size: 7px; font-weight: 600; color: #4a3215;
     }
     #diary-mock .day.dim { opacity: .2; }
@@ -1011,7 +1026,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         <div class="s-meta" id="sMeta"></div>
         <div class="s-highlight-row">
           <label for="sHighlight">AI 关键事</label>
-          <input type="text" id="sHighlight" maxlength="10" placeholder="如：去上海">
+          <input type="text" id="sHighlight" maxlength="6" placeholder="最多 6 个字">
           <button type="button" id="sHighlightSave">保存</button>
         </div>
         <div class="s-media" id="sMedia" hidden></div>
@@ -1450,7 +1465,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         } else {
           note.textContent = '本月 ' + monthCount + ' 天有记录 · 点日期看详情';
         }
-        for (let i = 0; i < offset; i++) grid.appendChild(el('span', 'day', '<span class="num"></span>'));
+        for (let i = 0; i < offset; i++) grid.appendChild(el('span', 'day outside', '<span class="num"></span>'));
         for (let d = 1; d <= daysInMonth; d++) {
           const key = dateKeyOf(currentYear, currentMonth, d);
           const e = DAYS[key];
@@ -1463,8 +1478,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           if (observance.badge) b.appendChild(el('span', observance.badge === '班' ? 'day-work' : 'day-rest', observance.badge));
           if (observance.label) {
             b.classList.add('has-observance');
-            b.appendChild(el('span', 'day-observance', esc(observance.label)));
           }
+          b.appendChild(el('span', 'day-observance' + (observance.label ? '' : ' empty'), observance.label ? esc(observance.label) : ''));
           if (e) {
             b.classList.add('has');
             let hit = false;
@@ -1474,10 +1489,6 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             if (state.filter && hit) {
               b.style.setProperty('--hit', dimOf[state.filter].color);
               b.classList.add('hit');
-            }
-            if (!state.filter) {
-              b.classList.add('hit');
-              b.style.setProperty('--hit', 'transparent');
             }
             const dots = el('span', 'dots', '');
             const mk = c => { const i = el('i', ''); i.style.background = dimOf[c].color; return i; };
@@ -1499,13 +1510,14 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             const label = extractDayHighlight(e);
             if (label) {
               b.classList.add('has-label');
-              b.appendChild(el('span', 'day-label', esc(label)));
             }
+            b.appendChild(el('span', 'day-label' + (label ? '' : ' empty'), verticalLabelHtml(label)));
             const observanceText = observance.full.length ? '，' + observance.full.join('、') : '';
             b.setAttribute('aria-label', monthDayOf(key) + ' ' + e.wd + ' ' + names + observanceText + (label ? '，关键事：' + label : '') + (e.media ? ' 有照片或视频' : ''));
           } else {
             const blank = el('span', 'dots', '');
             b.appendChild(blank);
+            b.appendChild(el('span', 'day-label empty', ''));
             if (observance.full.length) b.setAttribute('aria-label', monthDayOf(key) + '，' + observance.full.join('、'));
           }
           if (isCurrentMonth && d === now.getDate()) b.classList.add('today');
@@ -1739,6 +1751,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         first = first.replace(/^(今天|昨天|前天|上午|下午|中午|晚上|早上|凌晨|然后|后来)+/, '');
         first = first.replace(/^(我|我们)/, '');
         return Array.from(first).slice(0, 6).join('');
+      }
+
+      function verticalLabelHtml(text) {
+        const chars = Array.from(String(text || '')).slice(0, 6);
+        const lines = [];
+        for (let i = 0; i < chars.length; i += 2) lines.push(chars.slice(i, i + 2).join(''));
+        return lines.map(line => '<span>' + esc(line) + '</span>').join('');
       }
 
       function extractDayHighlight(e) {
@@ -2510,7 +2529,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#sheetClose').addEventListener('click', closeSheet);
       const saveSheetHighlight = () => {
         if (!state.sheetDate) return;
-        const value = $('#sHighlight').value.trim().slice(0, 10);
+        const value = $('#sHighlight').value.trim().slice(0, 6);
         const e = entry(state.sheetDate);
         e.highlight = value;
         e.highlightSource = 'manual';
