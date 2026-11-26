@@ -316,6 +316,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
     #diary-mock .day.outside { background: transparent; box-shadow: none; pointer-events: none; }
     #diary-mock .day.has { background: color-mix(in srgb, var(--paper) 94%, var(--gold) 6%); }
+    #diary-mock[data-theme="warm"] .day.has:not(.today):not(.hit) {
+      background: color-mix(in srgb, var(--paper) 96%, var(--gold) 5%);
+      box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--gold) 58%, var(--line));
+    }
     #diary-mock .day:active { transform: scale(.92); }
     #diary-mock .day-topline {
       width: 100%; height: 11px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
