@@ -1,9 +1,10 @@
-const CACHE_NAME = 'better-diary-v4';
+const CACHE_NAME = 'better-diary-v6';
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
   './vendor/capacitor.js',
   './vendor/speech-recognition.js',
+  './vendor/lunar.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
