@@ -302,7 +302,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .weekdays span.we { color: light-dark(#c08a5f, #c99970); }
     #diary-mock .grid {
       display: grid; grid-template-columns: repeat(7, 1fr);
-      grid-auto-rows: clamp(76px, 9.5vh, 84px); align-content: start;
+      grid-auto-rows: clamp(90px, 10.4vh, 96px); align-content: start;
       gap: 5px; padding: 8px 14px 0; flex: 1;
     }
     @keyframes gridfade { from { opacity: 0; } to { opacity: 1; } }
@@ -317,33 +317,31 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .day.outside { background: transparent; box-shadow: none; pointer-events: none; }
     #diary-mock .day.has { background: color-mix(in srgb, var(--paper) 94%, var(--gold) 6%); }
     #diary-mock .day:active { transform: scale(.92); }
+    #diary-mock .day-topline {
+      width: 100%; height: 11px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: center; column-gap: 1px; padding: 0 2px; box-sizing: border-box;
+    }
+    #diary-mock .day-topline span {
+      min-width: 0; overflow: hidden; white-space: nowrap; text-align: center;
+      font-size: 8px; line-height: 11px; font-weight: 500;
+    }
+    #diary-mock .day-topline .term { color: light-dark(#9b7434, #d5b86d); }
+    #diary-mock .day-topline .festival { color: light-dark(#a8442e, #e0937c); }
+    #diary-mock .day-topline .other { color: light-dark(#5c708c, #9eb6d4); }
+    #diary-mock .day-topline .other.rest { color: light-dark(#a8442e, #e0937c); }
+    #diary-mock .day-topline .empty { visibility: hidden; }
     #diary-mock .day .num {
-      height: 18px; font-size: 15px; font-weight: 600; line-height: 18px;
+      height: 20px; font-size: 16px; font-weight: 600; line-height: 20px;
       font-variant-numeric: tabular-nums; letter-spacing: -.01em;
     }
     #diary-mock .day .day-label {
-      width: 100%; height: 34px; overflow: hidden; padding: 0 1px; box-sizing: border-box;
+      width: 100%; height: 42px; overflow: hidden; padding: 0 1px; box-sizing: border-box;
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      font-size: 9.5px; line-height: 11.3px; font-weight: 500; white-space: nowrap;
-      color: color-mix(in srgb, var(--ink) 84%, var(--gold)); letter-spacing: .06em;
+      font-size: 12px; line-height: 14px; font-weight: 500; white-space: nowrap;
+      color: color-mix(in srgb, var(--ink) 86%, var(--gold)); letter-spacing: .08em;
     }
     #diary-mock .day .day-label span { display: block; }
-    #diary-mock .day .day-observance {
-      width: 100%; height: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      font-size: 9px; line-height: 11px; text-align: center;
-      color: light-dark(#a8442e, #e0937c); font-weight: 500; letter-spacing: .02em;
-    }
     #diary-mock .day .empty { visibility: hidden; }
-    #diary-mock .day .day-rest {
-      position: absolute; top: 2px; left: 3px; min-width: 13px; height: 13px; padding: 0 2px;
-      border-radius: 5px; font-size: 7px; line-height: 13px; text-align: center;
-      color: #fff; background: #b65b47;
-    }
-    #diary-mock .day .day-work {
-      position: absolute; top: 2px; left: 3px; min-width: 13px; height: 13px; padding: 0 2px;
-      border-radius: 5px; font-size: 7px; line-height: 13px; text-align: center;
-      color: #fff; background: #5c708c;
-    }
     #diary-mock .day .dots {
       display: flex; flex-direction: row; gap: 3px; height: 8px;
       align-items: center; justify-content: center; margin: 0;
@@ -357,16 +355,16 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 38%, transparent);
     }
     #diary-mock .day.today .num {
-      position: relative; z-index: 1; min-width: 34px; height: 18px;
+      position: relative; z-index: 1; min-width: 34px; height: 20px;
       display: inline-flex; align-items: center; justify-content: center; color: #4a3215;
     }
     #diary-mock .day.today .num::before {
       content: ''; position: absolute; z-index: -1; left: 50%; top: 50%;
-      width: 24px; height: 24px; transform: translate(-50%, -50%);
+      width: 26px; height: 26px; transform: translate(-50%, -50%);
       border-radius: 50%; background: var(--gold);
     }
     #diary-mock .day.today::after {
-      content: '今'; position: absolute; top: 4px; right: calc(50% - 25px);
+      content: '今'; position: absolute; top: 15px; right: calc(50% - 26px);
       font-size: 7px; font-weight: 600; color: #4a3215;
     }
     #diary-mock .day.dim { opacity: .2; }
@@ -1274,22 +1272,31 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         }).map(item => item.name + '生日');
       }
       function calendarObservance(key) {
-        const result = { label: '', badge: '', full: [] };
+        const result = { label: '', badge: '', full: [], slots: { term: '', festival: '', other: '' } };
         if (!window.Solar || !window.HolidayUtil) return result;
         const date = parseDateKey(key);
         const solar = window.Solar.fromYmd(date.year, date.month + 1, date.day);
         const lunar = solar.getLunar();
         const holiday = window.HolidayUtil.getHoliday(date.year, date.month + 1, date.day);
         const names = [];
+        const festivals = [];
+        const terms = [];
         const add = name => {
           const value = String(name || '').trim();
           if (value && names.indexOf(value) === -1) names.push(value);
         };
-        lunar.getFestivals().forEach(add);
-        solar.getFestivals().forEach(add);
-        if (holiday && holiday.getTarget() === key) add(holiday.getName());
-        add(lunar.getJieQi());
-        birthdaysForDate(key).forEach(add);
+        const addFestival = name => {
+          const value = String(name || '').trim();
+          if (value && festivals.indexOf(value) === -1) festivals.push(value);
+          add(value);
+        };
+        lunar.getFestivals().forEach(addFestival);
+        solar.getFestivals().forEach(addFestival);
+        if (holiday && holiday.getTarget() === key) addFestival(holiday.getName());
+        const term = String(lunar.getJieQi() || '').trim();
+        if (term) { terms.push(term); add(term); }
+        const birthdays = birthdaysForDate(key);
+        birthdays.forEach(add);
         if (holiday) result.badge = holiday.isWork() ? '班' : '休';
         result.full = names;
         const shortNames = {
@@ -1298,7 +1305,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           '中国农民丰收节': '丰收节',
           '全国防灾减灾日': '防灾减灾'
         };
-        result.label = shortNames[names[0]] || names[0] || '';
+        const festival = shortNames[festivals[0]] || festivals[0] || '';
+        result.slots.term = Array.from(term).slice(0, 2).join('');
+        result.slots.festival = Array.from(festival).slice(0, 2).join('');
+        result.slots.other = result.badge || (birthdays.length ? '生日' : '');
+        result.label = festival || term || result.slots.other;
         return result;
       }
       const DAYS = {};
@@ -1472,14 +1483,23 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           const b = el('button', 'day', '');
           b.type = 'button';
           b.dataset.d = key;
+          const observance = calendarObservance(key);
+          const slots = observance.slots;
+          const topline = el('span', 'day-topline', '');
+          const termSlot = el('span', 'term' + (slots.term ? '' : ' empty'), slots.term || '');
+          const festivalSlot = el('span', 'festival' + (slots.festival ? '' : ' empty'), slots.festival || '');
+          const otherTone = observance.badge === '休' ? ' rest' : observance.badge === '班' ? ' work' : '';
+          const otherSlot = el('span', 'other' + otherTone + (slots.other ? '' : ' empty'), slots.other || '');
+          topline.appendChild(termSlot);
+          topline.appendChild(festivalSlot);
+          topline.appendChild(otherSlot);
+          b.appendChild(topline);
           const num = el('span', 'num', String(d));
           b.appendChild(num);
-          const observance = calendarObservance(key);
-          if (observance.badge) b.appendChild(el('span', observance.badge === '班' ? 'day-work' : 'day-rest', observance.badge));
-          if (observance.label) {
+          if (slots.term || slots.festival || slots.other) {
             b.classList.add('has-observance');
+            topline.title = observance.full.join(' · ');
           }
-          b.appendChild(el('span', 'day-observance' + (observance.label ? '' : ' empty'), observance.label ? esc(observance.label) : ''));
           if (e) {
             b.classList.add('has');
             let hit = false;
