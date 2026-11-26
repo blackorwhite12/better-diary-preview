@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>更好的日记本</title>
 <meta name="theme-color" content="#faf8f5">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 <script src="./vendor/capacitor.js"></script>
 <script src="./vendor/speech-recognition.js"></script>
-<style>body{margin:0;background:#0a0f1c;padding:24px 12px;display:flex;justify-content:center;}</style>
+<style>html,body{width:100%;max-width:100%;overflow-x:hidden;}body{margin:0;background:#0a0f1c;padding:24px 12px;display:flex;justify-content:center;}</style>
 <script>
 /**
  * @license lucide v0.460.0 - ISC
@@ -825,12 +825,19 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .scrim.show { opacity: 1; pointer-events: auto; }
     #diary-mock .sheet {
       position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 30;
+      max-width: calc(100% - 20px); box-sizing: border-box;
       background: var(--paper); border-radius: 24px; padding: 14px 16px 16px;
       box-shadow: 0 -12px 40px rgba(20, 14, 5, .25); border: 1px solid var(--line);
       transform: translateY(115%); transition: transform .3s cubic-bezier(.32,.72,0,1);
     }
     #diary-mock .sheet.open { transform: translateY(0); }
+    #diary-mock .s-close {
+      position: absolute; top: 10px; right: 10px; width: 30px; height: 30px;
+      border: none; border-radius: 50%; background: var(--chip); color: var(--ink);
+      font-size: 18px; line-height: 1; cursor: pointer;
+    }
     #diary-mock .sheet .s-head { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; }
+    #diary-mock .sheet .s-head { padding-right: 32px; }
     #diary-mock .sheet .s-head .dot { width: 11px; height: 11px; border-radius: 50%; }
     #diary-mock .sheet .s-meta { font-size: 11px; color: var(--ink-soft); margin: 3px 0 8px; }
     #diary-mock .sheet .s-kws { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -861,6 +868,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .sound-btn:active { background: var(--chip); }
     @media (max-width: 520px), (display-mode: standalone) {
       body { padding: 0 !important; background: #faf8f5 !important; display: block !important; }
+      html, body, #diary-mock { overflow-x: hidden !important; }
       #diary-mock .stage { min-height: 100dvh; }
       #diary-mock .phone {
         width: 100%; height: 100dvh; min-height: 100dvh; aspect-ratio: auto;
@@ -952,6 +960,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
       <div class="scrim" id="scrim"></div>
       <div class="sheet" id="sheet">
+        <button type="button" class="s-close" id="sheetClose" aria-label="关闭">×</button>
         <div class="s-head"><span class="dot" id="sDot"></span><span id="sDate"></span></div>
         <div class="s-meta" id="sMeta"></div>
         <div class="s-media" id="sMedia" hidden></div>
@@ -1406,6 +1415,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       }
 
       function openSheet(key) {
+        if (calScrEl) {
+          calScrEl.style.transform = '';
+          calScrEl.style.opacity = '';
+        }
         const e = entry(key);
         $('#sDot').style.background = dimOf[e.main].color;
         $('#sDate').textContent = monthDayOf(key) + ' · ' + e.wd;
@@ -2287,6 +2300,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       });
       const endSwipe = e => {
         if (!swipe || e.pointerId !== swipe.id) return;
+        if (e.type === 'pointercancel') {
+          swipe = null;
+          resetCalendarTransform(true);
+          return;
+        }
         const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
         const elapsed = Math.max(1, performance.now() - swipe.time);
         const vx = Math.abs(dx) / elapsed, vy = Math.abs(dy) / elapsed;
@@ -2320,6 +2338,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       };
       calScrEl.addEventListener('pointerup', endSwipe);
       calScrEl.addEventListener('pointercancel', endSwipe);
+      calScrEl.addEventListener('lostpointercapture', () => {
+        if (swipe) {
+          swipe = null;
+          resetCalendarTransform(true);
+        }
+      });
 
       $('#prevMonthBtn').addEventListener('click', () => changeMonth(-1));
       $('#nextMonthBtn').addEventListener('click', () => changeMonth(1));
@@ -2335,6 +2359,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (b) openSheet(b.dataset.d);
       });
       $('#scrim').addEventListener('click', closeSheet);
+      $('#sheetClose').addEventListener('click', closeSheet);
       $('#openDiaryBtn').addEventListener('click', () => {
         closeSheet();
         try { renderDiary(state.sheetDate || todayKey); } catch (err) { console.error(err); }
@@ -2480,6 +2505,15 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       renderVis();
       icons();
       window.addEventListener('pagehide', () => saveEntries(false));
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          resetCalendarTransform(false);
+          if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() &&
+              window.visualViewport && window.visualViewport.scale > 1.02) {
+            location.reload();
+          }
+        }
+      });
       if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
         navigator.serviceWorker.register(new URL('./sw.js', location.href)).catch(err => console.error('Service Worker 注册失败', err));
       }
