@@ -1,4 +1,4 @@
-const CACHE_NAME = 'better-diary-v12';
+const CACHE_NAME = 'better-diary-v15';
 const APP_SHELL = [
   './index.html',
   './manifest.webmanifest',
