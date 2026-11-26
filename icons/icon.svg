@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffaf1"/>
+      <stop offset="1" stop-color="#eadcc5"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f2d890"/>
+      <stop offset="1" stop-color="#c9983f"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="26" stdDeviation="28" flood-color="#4b321b" flood-opacity=".24"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#paper)"/>
+  <circle cx="512" cy="460" r="284" fill="url(#gold)" opacity=".2"/>
+  <g fill="none" stroke="#b68a42" stroke-width="24" stroke-linecap="round" filter="url(#shadow)">
+    <rect x="238" y="242" width="548" height="548" rx="88" fill="#fffdf8"/>
+    <path d="M238 390h548M390 242v148M648 242v148"/>
+    <path d="M360 546h304M360 646h214" stroke="#d8c5a7" stroke-width="22"/>
+  </g>
+  <circle cx="762" cy="762" r="126" fill="#b94d3f" filter="url(#shadow)"/>
+  <text x="762" y="822" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="164" font-weight="700" fill="#fff8ed">留</text>
+</svg>

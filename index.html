@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>更好的日记本 · 前端模型</title>
+<title>更好的日记本</title>
+<meta name="theme-color" content="#faf8f5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="更好的日记本">
+<meta name="application-name" content="更好的日记本">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 <style>body{margin:0;background:#0a0f1c;padding:24px 12px;display:flex;justify-content:center;}</style>
 <script>
 /**
@@ -133,9 +142,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock[data-theme="cyber"] .streak { box-shadow: 0 0 10px color-mix(in srgb, var(--gold) 40%, transparent); }
     #diary-mock[data-theme="cool"] .seal { box-shadow: 0 0 12px color-mix(in srgb, var(--gold) 55%, transparent); }
     #diary-mock[data-theme="cool"] .search-view,
+    #diary-mock[data-theme="cool"] .import-view,
     #diary-mock[data-theme="cool"] .otd-view,
     #diary-mock[data-theme="cool"] .sheet,
     #diary-mock[data-theme="cyber"] .search-view,
+    #diary-mock[data-theme="cyber"] .import-view,
     #diary-mock[data-theme="cyber"] .otd-view,
     #diary-mock[data-theme="cyber"] .sheet {
       background: rgba(9, 13, 26, .72);
@@ -216,12 +227,18 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .cal-head {
       display: flex; align-items: center; padding: 6px 20px 2px;
     }
-    #diary-mock .cal-side { flex: 1; }
+    #diary-mock .cal-side { flex: 1; display: flex; align-items: center; gap: 6px; }
     #diary-mock .theme-btn {
       width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
       background: rgba(120, 100, 70, .10); color: var(--ink);
       display: flex; align-items: center; justify-content: center;
     }
+    #diary-mock .import-btn {
+      width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
+      background: rgba(120, 100, 70, .10); color: var(--ink);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #diary-mock .import-btn i { width: 15px; height: 15px; }
     #diary-mock .streak {
       display: inline-flex; align-items: center; gap: 2px;
       font-size: 12px; font-weight: 600; color: var(--ink);
@@ -329,6 +346,51 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
     #diary-mock .search-field input:focus { border-color: var(--gold); background: #fff; }
     #diary-mock .search-results { flex: 1; overflow: auto; padding: 8px 14px 16px; }
+    #diary-mock .import-view {
+      position: absolute; inset: 0; z-index: 34; background: var(--paper);
+      display: flex; flex-direction: column; transform: translateY(104%);
+      transition: transform .32s cubic-bezier(.32, .72, 0, 1);
+    }
+    #diary-mock .import-view.open { transform: translateY(0); }
+    #diary-mock .import-top { display: flex; align-items: center; gap: 10px; padding: 36px 16px 10px; }
+    #diary-mock .import-title { flex: 1; text-align: center; font-size: 15px; font-weight: 600; }
+    #diary-mock .import-body { flex: 1; min-height: 0; overflow: auto; padding: 4px 14px 18px; }
+    #diary-mock .import-note {
+      font-size: 11px; line-height: 1.65; color: var(--ink-soft);
+      padding: 10px 12px; border-radius: 12px; background: var(--paper-deep);
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+    #diary-mock .import-actions { display: flex; gap: 8px; margin-top: 10px; }
+    #diary-mock .import-actions button, #diary-mock .import-file {
+      flex: 1; min-height: 38px; border-radius: 12px; border: 1px solid var(--line);
+      background: var(--chip); color: var(--ink); font: 12px/1.2 inherit;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    #diary-mock .import-file input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    #diary-mock .import-text {
+      width: 100%; box-sizing: border-box; min-height: 155px; max-height: 34vh; margin-top: 10px;
+      resize: vertical; border: 1px solid var(--line); border-radius: 14px; padding: 11px 12px;
+      background: rgba(255, 255, 255, .5); color: var(--ink); font: 12px/1.65 inherit; outline: none;
+    }
+    #diary-mock .import-text:focus { border-color: var(--gold); background: #fff; }
+    #diary-mock .import-summary { min-height: 18px; font-size: 11px; color: var(--ink-soft); padding: 8px 2px 2px; }
+    #diary-mock .import-preview { display: flex; flex-direction: column; gap: 6px; }
+    #diary-mock .import-item {
+      padding: 8px 10px; border-radius: 11px; background: var(--paper-deep);
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+    #diary-mock .import-item-head { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 600; }
+    #diary-mock .import-item-head small { color: var(--ink-soft); font-weight: 400; }
+    #diary-mock .import-item-text {
+      margin-top: 4px; color: var(--ink-soft); font-size: 10px; line-height: 1.5;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #diary-mock .import-confirm {
+      width: 100%; height: 42px; border: none; border-radius: 12px; margin-top: 12px;
+      background: linear-gradient(135deg, #eed9a8, #d8ad5f); color: #4a3215;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    #diary-mock .import-confirm:disabled { opacity: .45; }
     #diary-mock .s-result {
       display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px;
       background: var(--paper-deep); box-shadow: inset 0 0 0 1px var(--line);
@@ -796,6 +858,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         <div class="cal-head" id="calHead">
           <span class="cal-side">
             <button type="button" class="theme-btn" id="themeBtn" aria-label="切换主题"><span id="themeEmoji">🌸</span></button>
+            <button type="button" class="import-btn" id="importBtn" aria-label="导入旧日记" title="导入旧日记"><i data-lucide="file-up"></i></button>
           </span>
           <h2 id="monthTitle"><span class="cal-title"><span id="yearEdit" data-edit="year" title="长按 2 秒自定义年份">2026年</span> <span id="monthEdit" data-edit="month" title="长按 2 秒自定义月份">8月</span></span></h2>
           <div class="nav">
@@ -930,6 +993,25 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         <div class="search-results" id="searchResults"></div>
       </div>
 
+      <div class="import-view" id="importView">
+        <div class="import-top">
+          <button type="button" class="otd-close" id="importClose" aria-label="关闭导入">×</button>
+          <span class="import-title">导入旧日记</span>
+          <span class="otd-top-spacer"></span>
+        </div>
+        <div class="import-body">
+          <div class="import-note">从备忘录复制正文，或在文件 App 选择文本文件。每篇日记需要有完整日期，例如“2024年3月5日”；日期和时间会写入对应记录，不会统一算作今天。</div>
+          <div class="import-actions">
+            <button type="button" id="pasteImportBtn">从剪贴板读入</button>
+            <label class="import-file">选择文本文件<input type="file" id="importFile" accept=".txt,.md,.rtf,.json,text/plain,text/markdown,application/rtf,application/json"></label>
+          </div>
+          <textarea class="import-text" id="importText" placeholder="粘贴旧日记，例如：&#10;&#10;# 2024年3月5日 21:30&#10;今天……&#10;&#10;# 2024年3月6日&#10;第二天……"></textarea>
+          <div class="import-summary" id="importSummary">等待粘贴或选择文件</div>
+          <div class="import-preview" id="importPreview"></div>
+          <button type="button" class="import-confirm" id="importConfirm" disabled>确认导入</button>
+        </div>
+      </div>
+
       <div class="share-view" id="shareView">
         <div class="share-card">
           <div class="share-top"><span id="shareDate">8月9日 · 今天</span><span class="share-seal">留</span></div>
@@ -986,7 +1068,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           dims: { happy: '#ff5fb0', angry: '#ff7a5c', calm: '#3ee6c4', miss: '#c084fc', out: '#38bdf8', together: '#4ade80', down: '#94a3b8' }
         }
       };
+      const STORAGE_KEY = 'better-diary-local-v1';
+      const PREFS_KEY = 'better-diary-prefs-v1';
       let theme = 'warm';
+      try {
+        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+        if (THEMES[prefs.theme]) theme = prefs.theme;
+      } catch (_) {}
       function applyTheme(name) {
         theme = name;
         root.setAttribute('data-theme', name);
@@ -994,6 +1082,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         $('#sbRight').textContent = THEMES[name].deco;
         const p = THEMES[name].dims;
         DIMS.forEach(d => { d.color = p[d.key]; });
+        try {
+          const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+          localStorage.setItem(PREFS_KEY, JSON.stringify({ ...prefs, theme: name }));
+        } catch (_) {}
         renderFilters();
         renderCalendar();
         if (state.screen === 'diary') { try { renderDiary(state.activeDate); } catch (e) { console.error(e); } }
@@ -1017,7 +1109,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         { y: '2022', dim: 'down', text: '项目黄了，一个人在出租屋待了一整天。' }
       ];
       const WD = ['一', '二', '三', '四', '五', '六', '日'];
-      const DAYS = {
+      const SAMPLE_DAYS = {
         '1': { wd: '星期六', wx: '晴，傍晚微风', loc: '上海', main: 'happy', sub: 'together', kws: [['老朋友', 'together'], ['学画画', 'happy']], content: ['今天去见了许久未见的老朋友，在武康路的一家咖啡馆坐了一下午。', '他说他最近开始学画画了，四十岁重新开始，我觉得很酷。', '晚上回家路上买了一束向日葵，放在餐桌上，整个房间都亮了。'] },
         '2': { wd: '星期日', wx: '晴朗，偶尔小雨', loc: '上海', main: 'calm', sub: null, kws: [['日记app', 'calm'], ['需求清单', 'calm']], content: ['今天开始认真思考日记app的事情。', '在备忘录里写日记有好几个不方便的地方，想要找一个更好的方案。', '和AI聊了很久，思路越来越清晰了。日历+日记的结合让我很兴奋。', '晚上整理了需求清单，感觉可以开始了。'] },
         '3': { wd: '星期一', wx: '阴转多云', loc: '上海', main: 'together', sub: 'calm', kws: [['投资圈朋友', 'together'], ['具身智能', 'calm']], content: ['上午开会讨论了下半年的投资方向。', '中午和投资圈的朋友吃了顿饭，他提醒我关注具身智能这个方向。', '记下来，回头研究一下。'] },
@@ -1037,6 +1129,42 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         '14': { wd: '星期五', wx: '晴', loc: '上海', main: 'angry', sub: null, kws: [['供应商', 'angry']], content: ['下午和供应商在电话里吵了一架，交付一拖再拖，实在忍不了。', '挂了电话还是有点气，出去走了两圈。'] },
         '15': { wd: '星期六', wx: '晴', loc: '上海', main: 'calm', sub: 'happy', kws: [['大扫除', 'calm'], ['给自己做饭', 'happy']], content: ['在家大扫除，翻出了很多旧东西。', '大学时候的笔记本，上面还有那时候画的涂鸦。', '晚上给自己做了一顿好吃的，算是犒劳。'], media: { photos: [{ label: '翻出的旧物', emoji: '📦', g: 'linear-gradient(135deg,#e2cfa8,#b99a6a)' }], video: null } }
       };
+      const today = new Date();
+      let currentYear = today.getFullYear(), currentMonth = today.getMonth();
+      const pad2 = n => String(n).padStart(2, '0');
+      const dateKeyOf = (year, month, day) => year + '-' + pad2(month + 1) + '-' + pad2(day);
+      const todayKey = dateKeyOf(today.getFullYear(), today.getMonth(), today.getDate());
+      const parseDateKey = key => {
+        const parts = String(key).split('-').map(Number);
+        return { year: parts[0], month: parts[1] - 1, day: parts[2] };
+      };
+      const weekdayOf = key => {
+        const d = parseDateKey(key);
+        return '星期' + WD[(new Date(d.year, d.month, d.day).getDay() + 6) % 7];
+      };
+      const monthDayOf = key => {
+        const d = parseDateKey(key);
+        return (d.month + 1) + '月' + d.day + '日';
+      };
+      const fullDateOf = key => {
+        const d = parseDateKey(key);
+        return d.year + '年' + (d.month + 1) + '月' + d.day + '日';
+      };
+      const DAYS = {};
+      Object.entries(SAMPLE_DAYS).forEach(([day, entry]) => {
+        entry.sample = true;
+        DAYS[dateKeyOf(2026, 7, Number(day))] = entry;
+      });
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        Object.entries(saved.entries || {}).forEach(([key, entry]) => {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(key) && entry && Array.isArray(entry.content)) DAYS[key] = entry;
+        });
+        Object.entries(saved.labels || {}).forEach(([key, value]) => {
+          const dim = DIMS.find(d => d.key === key);
+          if (dim && typeof value === 'string' && value.trim()) dim.name = value.trim().slice(0, 6);
+        });
+      } catch (_) {}
       const SCRIPT = [
         { raw: '嗯 今天下午去见小王了', clean: '今天下午去见小王了。' },
         { raw: '然后我们一起喝了咖啡然后聊了挺久的', clean: '我们一起喝了咖啡，聊了挺久的。' },
@@ -1051,11 +1179,28 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const charWrap = t => Array.from(t).map((c, i) => '<span class="ch" style="--i:' + Math.min(i, 40) + '">' + (c === ' ' ? '&nbsp;' : esc(c)) + '</span>').join('');
 
-      let state = { screen: 'calendar', filter: null, searchScope: null, activeDate: '2', listening: false, step: 0, timer: null, transcript: '', spoken: [], justWritten: false };
-      let currentYear = 2026, currentMonth = 7; // currentMonth: 0-based
+      let state = { screen: 'calendar', filter: null, searchScope: null, activeDate: todayKey, listening: false, step: 0, timer: null, transcript: '', spoken: [], justWritten: false };
 
       const sortedDates = () => Object.keys(DAYS).sort((a, b) => a - b);
-      const entry = d => DAYS[d] || (DAYS[d] = { wd: '星期一', wx: '晴', loc: '上海', main: 'calm', sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
+      const entry = key => DAYS[key] || (DAYS[key] = { wd: weekdayOf(key), wx: '晴', loc: '上海', main: 'calm', sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
+
+      let saveTimer = null;
+      function saveEntries(announce) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+        try {
+          const labels = Object.fromEntries(DIMS.map(d => [d.key, d.name]));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), entries: DAYS, labels }));
+          if (announce) showToast('已保存到本机');
+        } catch (err) {
+          console.error(err);
+          showToast('保存失败，请检查浏览器存储空间');
+        }
+      }
+      function scheduleSave() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => saveEntries(false), 450);
+      }
 
       function icons() { if (window.lucide) lucide.createIcons({ attrs: { width: 16, height: 16 } }); }
 
@@ -1099,7 +1244,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const commit = () => {
           if (done) return; done = true;
           const v = inp.value.trim();
-          if (v) { dim.name = v; showToast('关键词已改为「' + v + '」'); }
+          if (v) { dim.name = v; saveEntries(false); showToast('关键词已改为「' + v + '」'); }
           renderFilters();
           if (state.filter) renderCalendar();
         };
@@ -1153,8 +1298,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
         const now = new Date();
         const isCurrentMonth = now.getFullYear() === currentYear && now.getMonth() === currentMonth;
-        const inSampleMonth = currentYear === 2026 && currentMonth === 7;
-        $('#emptyHint').hidden = inSampleMonth;
+        const monthPrefix = currentYear + '-' + pad2(currentMonth + 1) + '-';
+        const monthKeys = Object.keys(DAYS).filter(k => k.indexOf(monthPrefix) === 0);
+        const monthCount = monthKeys.length;
+        $('#emptyHint').hidden = monthCount > 0;
         const rowCount = Math.ceil((offset + daysInMonth) / 7);
         const gridH = grid.clientHeight || (rowCount >= 6 ? 430 : 480);
         const rowH = gridH / rowCount;
@@ -1162,15 +1309,14 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         grid.classList.toggle('seven', maxDots === 7);
         const note = $('#filterNote');
         if (state.filter) {
-          let n = 0;
-          if (inSampleMonth) Object.keys(DAYS).forEach(k => { const e = DAYS[k]; if (colorKeys(e).includes(state.filter)) n++; });
+          const n = monthKeys.filter(k => colorKeys(DAYS[k]).includes(state.filter)).length;
           note.textContent = '本月 ' + n + ' 天「' + dimOf[state.filter].name + '」· 再点色块取消';
         } else {
-          note.textContent = '本月 ' + (inSampleMonth ? Object.keys(DAYS).length : 0) + ' 天有记录 · 点日期看详情';
+          note.textContent = '本月 ' + monthCount + ' 天有记录 · 点日期看详情';
         }
         for (let i = 0; i < offset; i++) grid.appendChild(el('span', 'day', '<span class="num"></span>'));
         for (let d = 1; d <= daysInMonth; d++) {
-          const key = String(d);
+          const key = dateKeyOf(currentYear, currentMonth, d);
           const e = DAYS[key];
           const b = el('button', 'day', '');
           b.type = 'button';
@@ -1208,7 +1354,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
               b.appendChild(flag);
             }
             const names = colorKeys(e).map(c => dimOf[c].name).join(' ');
-            b.setAttribute('aria-label', '8月' + d + '日 ' + e.wd + ' ' + names + (e.media ? ' 有照片或视频' : ''));
+            b.setAttribute('aria-label', monthDayOf(key) + ' ' + e.wd + ' ' + names + (e.media ? ' 有照片或视频' : ''));
           } else {
             const blank = el('span', 'dots', '');
             b.appendChild(blank);
@@ -1234,7 +1380,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       function openSheet(key) {
         const e = entry(key);
         $('#sDot').style.background = dimOf[e.main].color;
-        $('#sDate').textContent = '8月' + key + '日 · ' + e.wd;
+        $('#sDate').textContent = monthDayOf(key) + ' · ' + e.wd;
         $('#sMeta').textContent = e.wx + ' · ' + e.loc + ' · ' + visLabel(e);
         const hasMedia = e.media && e.media.photos && e.media.photos.length;
         const sm = $('#sMedia');
@@ -1288,9 +1434,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const e = entry(key);
         state.activeDate = key;
         $('#diarySeal').hidden = true;
-        const fmt = '8月' + Number(key) + '日 · ' + e.wd;
+        const fmt = monthDayOf(key) + ' · ' + e.wd;
         $('#dayNavLabel').textContent = fmt;
-        $('#metaLine').innerHTML = '2026年8月' + Number(key) + '日 ' + e.wd + ' · ' + e.wx + ' · ' + e.loc + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '');
+        $('#metaLine').innerHTML = fullDateOf(key) + ' ' + e.wd + ' · ' + e.wx + ' · ' + e.loc + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '');
         if (e.segments) {
           $('#contentArea').innerHTML = e.segments.map(s => '<p>' + highlight(s.text, s.kws) + '</p>').join('');
         } else {
@@ -1332,6 +1478,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
       const FONTS = [{ k: '小', c: 'fs-s' }, { k: '标准', c: 'fs-m' }, { k: '大', c: 'fs-l' }];
       let fontLevel = 1;
+      try {
+        const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+        if (Number.isInteger(prefs.fontLevel) && FONTS[prefs.fontLevel]) fontLevel = prefs.fontLevel;
+      } catch (_) {}
 
       function showToast(msg) {
         const t = $('#toast');
@@ -1366,9 +1516,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       }
 
       function openOTD() {
-        const date = state.sheetDate || '9';
-        $('#otdDate').textContent = '8月' + Number(date) + '日';
-        $('#otdTodayDate').textContent = '8月' + Number(date) + '日';
+        const date = state.sheetDate || state.activeDate || todayKey;
+        $('#otdDate').textContent = monthDayOf(date);
+        $('#otdTodayDate').textContent = monthDayOf(date);
         const wl = $('#otdWorldList'); wl.innerHTML = '';
         WORLD_OTD.forEach(w => {
           wl.appendChild(el('li', '', '<b>' + w.y + '</b>' + esc(w.t)));
@@ -1379,12 +1529,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           card.appendChild(el('span', 'yr', m.y));
           card.appendChild(el('span', 'yr-text', esc(m.text)));
           if (m.dim) {
-            card.addEventListener('click', () => showToast('打开 ' + m.y + '年8月' + Number(date) + '日 的日记（演示）'));
+            card.addEventListener('click', () => showToast('打开 ' + m.y + '年' + monthDayOf(date) + ' 的日记（演示）'));
           }
           pl.appendChild(card);
         });
         const e = entry(date);
-        $('#otdMeta').innerHTML = '2026年8月' + Number(date) + '日 ' + e.wd + ' · ' + e.wx + ' · ' + e.loc + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '') + ' · ' + visLabel(e);
+        $('#otdMeta').innerHTML = fullDateOf(date) + ' ' + e.wd + ' · ' + e.wx + ' · ' + e.loc + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '') + ' · ' + visLabel(e);
         const oc = $('#otdContent');
         if (e.segments) {
           oc.innerHTML = e.segments.map(s => '<p>' + charWrap(s.text) + '</p>').join('');
@@ -1462,12 +1612,270 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           const card = el('div', 's-result', '');
           const dots = el('span', 's-dots', '');
           dayColorKeys(e).forEach(c => { const i = el('i', ''); i.style.background = dimOf[c].color; dots.appendChild(i); });
-          card.appendChild(el('span', 's-date', '8月' + Number(k) + '日'));
+          card.appendChild(el('span', 's-date', monthDayOf(k)));
           card.appendChild(dots);
           card.appendChild(el('span', 's-snip', esc(dayText(e).slice(0, 24))));
           card.addEventListener('click', () => { closeSearch(); openSheet(k); });
           list.appendChild(card);
         });
+      }
+
+      const IMPORT_DATE_RE = /^\s*(?:#{1,6}\s*)?[【\[]?\s*(?:(20\d{2})\s*(?:年|[./-])\s*(\d{1,2})\s*(?:月|[./-])\s*(\d{1,2})\s*日?|(\d{1,2})\s*月\s*(\d{1,2})\s*日)\s*[】\]]?(?:\s*[（(]?\s*(?:星期|周)[一二三四五六日天]\s*[）)]?)?\s*(?:(上午|下午|晚上|凌晨)?\s*(\d{1,2})[:：](\d{2}))?(?:\s+|[:：]\s*)?(.*)$/;
+
+      function normalizeImportTime(period, hourText, minuteText) {
+        let hour = Number(hourText);
+        const minute = Number(minuteText);
+        if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour > 23 || minute > 59) return '';
+        if ((period === '下午' || period === '晚上') && hour < 12) hour += 12;
+        if (period === '凌晨' && hour === 12) hour = 0;
+        return pad2(hour) + ':' + pad2(minute);
+      }
+
+      function inferImportDimension(text) {
+        if (/开心|高兴|快乐|幸福|惊喜|顺利|喜欢|好吃|成功/.test(text)) return 'happy';
+        if (/生气|愤怒|争吵|吵架|烦躁|气死/.test(text)) return 'angry';
+        if (/想念|思念|梦见|怀念/.test(text)) return 'miss';
+        if (/低落|难过|伤心|失望|沮丧|累/.test(text)) return 'down';
+        if (/旅行|出发|到了|路上|公园|散步/.test(text)) return 'out';
+        if (/陪|见面|朋友|家人|一起|聊天/.test(text)) return 'together';
+        return 'calm';
+      }
+
+      function cleanImportParagraphs(lines) {
+        return lines
+          .map(line => String(line).replace(/^\s*[-*]\s+/, '').trim())
+          .filter(line => line && !/^[-—_]{3,}$/.test(line));
+      }
+
+      function makeImportedEntry(key, blocks) {
+        const paragraphs = blocks.flatMap(block => block.paragraphs);
+        const fullText = paragraphs.join('\n');
+        const hasTime = blocks.some(block => block.time);
+        return {
+          wd: weekdayOf(key),
+          wx: '旧日记',
+          loc: '导入',
+          vis: 'self',
+          main: inferImportDimension(fullText),
+          sub: null,
+          kws: [],
+          content: paragraphs,
+          segments: hasTime ? blocks.map(block => ({
+            time: block.time,
+            dim: inferImportDimension(block.paragraphs.join(' ')),
+            text: block.paragraphs.join('\n'),
+            kws: []
+          })) : null,
+          source: 'import',
+          importedAt: new Date().toISOString()
+        };
+      }
+
+      function parseJsonDiary(text) {
+        const trimmed = text.trim();
+        if (!trimmed || !/^[\[{]/.test(trimmed)) return null;
+        let data;
+        try { data = JSON.parse(trimmed); }
+        catch (_) {
+          return trimmed.startsWith('{') ? { records: [], warnings: ['JSON 文件格式不正确'] } : null;
+        }
+        const warnings = [];
+        const records = [];
+        const sourceEntries = data && data.entries && typeof data.entries === 'object'
+          ? Object.entries(data.entries)
+          : (Array.isArray(data) ? data.map(item => [item.date || item.dateKey, item]) : []);
+        sourceEntries.forEach(([key, raw]) => {
+          if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(String(key))) {
+            warnings.push('跳过一条没有完整日期的 JSON 记录');
+            return;
+          }
+          const content = Array.isArray(raw.content)
+            ? raw.content.map(item => String(item).trim()).filter(Boolean)
+            : (raw.segments ? raw.segments.map(segment => String(segment.text || '').trim()).filter(Boolean) : []);
+          if (!content.length) {
+            warnings.push(monthDayOf(key) + ' 没有正文，已跳过');
+            return;
+          }
+          const item = JSON.parse(JSON.stringify(raw));
+          item.wd = item.wd || weekdayOf(key);
+          item.wx = item.wx || '旧日记';
+          item.loc = item.loc || '导入';
+          item.vis = item.vis || 'self';
+          item.main = item.main || inferImportDimension(content.join(' '));
+          item.kws = Array.isArray(item.kws) ? item.kws : [];
+          item.content = content;
+          item.source = item.source || 'import';
+          records.push({
+            key,
+            time: item.segments && item.segments[0] ? item.segments[0].time || '' : '',
+            preview: content.join(' '),
+            entry: item
+          });
+        });
+        return { records, warnings };
+      }
+
+      function parseDiaryText(text) {
+        const json = parseJsonDiary(text);
+        if (json) return json;
+        const lines = text.replace(/\r\n?/g, '\n').split('\n');
+        const warnings = [];
+        const groups = new Map();
+        let current = null;
+        let currentYear = null;
+        let prefaceLines = 0;
+
+        const flush = () => {
+          if (!current) return;
+          const block = { time: current.time, paragraphs: cleanImportParagraphs(current.body) };
+          if (!block.paragraphs.length) {
+            if (current.valid) warnings.push(monthDayOf(current.key) + ' 没有正文，已跳过');
+          } else if (current.valid) {
+            const group = groups.get(current.key) || [];
+            group.push(block);
+            groups.set(current.key, group);
+          }
+          current = null;
+        };
+
+        lines.forEach(line => {
+          const match = line.match(IMPORT_DATE_RE);
+          if (!match) {
+            if (current) current.body.push(line);
+            else if (line.trim()) prefaceLines++;
+            return;
+          }
+          flush();
+          const explicitYear = Number(match[1]);
+          if (explicitYear) currentYear = explicitYear;
+          const year = explicitYear || currentYear;
+          const month = Number(match[2] || match[4]);
+          const day = Number(match[3] || match[5]);
+          const parsedDate = year ? new Date(year, month - 1, day) : null;
+          const valid = !!parsedDate && parsedDate.getFullYear() === year && parsedDate.getMonth() === month - 1 && parsedDate.getDate() === day;
+          if (!year) {
+            warnings.push('有一篇日记只有月日、没有年份；请把它改成完整日期后再导入');
+          } else if (!valid) {
+            warnings.push(year + '年' + month + '月' + day + '日 不是有效日期');
+          }
+          current = {
+            key: valid ? dateKeyOf(year, month - 1, day) : '',
+            time: normalizeImportTime(match[6], match[7], match[8]),
+            body: match[9] ? [match[9].replace(/^\s*[】\]]\s*/, '')].filter(Boolean) : [],
+            valid: !!valid
+          };
+        });
+        flush();
+        if (prefaceLines && !groups.size) {
+          warnings.push('没有识别到带年份的日期标题');
+        }
+
+        const records = Array.from(groups.entries())
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map(([key, blocks]) => {
+            for (const block of blocks) {
+              if (block.time) continue;
+              const timedIndex = block.paragraphs.slice(0, 5).findIndex(line => /^(上午|下午|晚上|凌晨)?\s*\d{1,2}[:：]\d{2}(?:\s|$)/.test(line));
+              if (timedIndex >= 0) {
+                const timedLine = block.paragraphs[timedIndex];
+                const timeMatch = timedLine.match(/^(上午|下午|晚上|凌晨)?\s*(\d{1,2})[:：](\d{2})\s*(.*)$/);
+                block.time = normalizeImportTime(timeMatch[1], timeMatch[2], timeMatch[3]);
+                if (timeMatch[4]) block.paragraphs[timedIndex] = timeMatch[4].trim();
+                else block.paragraphs.splice(timedIndex, 1);
+              }
+            }
+            const entry = makeImportedEntry(key, blocks);
+            return {
+              key,
+              time: blocks[0].time || '',
+              preview: entry.content.join(' '),
+              entry
+            };
+          })
+          .filter(record => record.entry.content.length);
+        return { records, warnings };
+      }
+
+      function refreshImportPreview() {
+        const text = $('#importText').value;
+        const result = parseDiaryText(text);
+        state.importParsed = result.records;
+        const preview = $('#importPreview');
+        const summary = $('#importSummary');
+        preview.innerHTML = '';
+        if (!text.trim()) {
+          summary.textContent = '等待粘贴或选择文件';
+        } else if (!result.records.length) {
+          summary.textContent = result.warnings[0] || '未识别到可导入的日记';
+        } else {
+          summary.textContent = '识别到 ' + result.records.length + ' 篇日记' + (result.warnings.length ? ' · ' + result.warnings.length + ' 条提示' : '');
+        }
+        result.records.slice(0, 20).forEach(record => {
+          const existing = DAYS[record.key];
+          const item = el('div', 'import-item', '');
+          const head = el('div', 'import-item-head', '');
+          head.appendChild(el('span', '', monthDayOf(record.key) + (record.time ? ' · ' + record.time : '')));
+          head.appendChild(el('small', '', existing ? (existing.sample ? '覆盖示例' : '合并已有') : '新增'));
+          item.appendChild(head);
+          item.appendChild(el('div', 'import-item-text', esc(record.preview.slice(0, 54))));
+          preview.appendChild(item);
+        });
+        if (result.records.length > 20) preview.appendChild(el('div', 'import-summary', '另有 ' + (result.records.length - 20) + ' 篇未展开'));
+        $('#importConfirm').disabled = !result.records.length;
+      }
+
+      function mergeImportedRecords(records) {
+        let added = 0;
+        let merged = 0;
+        records.forEach(record => {
+          const incoming = JSON.parse(JSON.stringify(record.entry));
+          const existing = DAYS[record.key];
+          if (!existing || existing.sample) {
+            DAYS[record.key] = incoming;
+            added++;
+            return;
+          }
+          const existingSegments = existing.segments && existing.segments.length
+            ? existing.segments
+            : existing.content.map(text => ({ time: '', dim: existing.main || 'calm', text, kws: [] }));
+          const incomingSegments = incoming.segments && incoming.segments.length
+            ? incoming.segments
+            : incoming.content.map(text => ({ time: '', dim: incoming.main || 'calm', text, kws: [] }));
+          const seen = new Set();
+          existing.segments = existingSegments.concat(incomingSegments).filter(segment => {
+            const key = (segment.time || '') + '\n' + segment.text.trim();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          existing.content = existing.segments.map(segment => segment.text);
+          existing.source = 'import';
+          merged++;
+        });
+        return { added, merged };
+      }
+
+      function openImport() {
+        closeSheet();
+        closeSearch();
+        refreshImportPreview();
+        $('#importView').classList.add('open');
+        icons();
+      }
+
+      function closeImport() {
+        $('#importView').classList.remove('open');
+      }
+
+      function decodeImportedFile(text) {
+        if (!/^\s*\{\\rtf/.test(text)) return text;
+        return text
+          .replace(/\\u(-?\d+)\??/g, (_, code) => String.fromCharCode((Number(code) + 65536) % 65536))
+          .replace(/\\par[d]?/gi, '\n')
+          .replace(/\\tab/gi, '\t')
+          .replace(/\\'[0-9a-f]{2}/gi, '')
+          .replace(/\\[a-z]+-?\d* ?/gi, '')
+          .replace(/[{}]/g, '');
       }
 
       function openSearch() {
@@ -1484,7 +1892,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
       function openShare() {
         const e = entry(state.activeDate);
-        $('#shareDate').textContent = '8月' + Number(state.activeDate) + '日 · 今天';
+        $('#shareDate').textContent = monthDayOf(state.activeDate) + ' · 今天';
         const dots = $('#shareDots'); dots.innerHTML = '';
         dayColorKeys(e).forEach(c => { const i = el('i', ''); i.style.background = dimOf[c].color; dots.appendChild(i); });
         $('#shareText').textContent = dayText(e).slice(0, 60) || '今天，值得记下点什么。';
@@ -1545,6 +1953,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           e.content = [];
           e.segments = null;
           $('#contentArea').innerHTML = '';
+          scheduleSave();
         }
         $('#polishCard').hidden = true;
         $('#micBtn').classList.add('listening');
@@ -1639,10 +2048,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           e.main = e.main || segDims[0] || 'calm';
           e.sub = e.sub || segDims[1] || null;
           e.extra = null;
-          const newSegs = groups.map((g, i) => ({ time: i === 0 ? '10:02' : '', dim: segDims[i], text: g.text, kws: g.kws }));
+          const nowTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+          const newSegs = groups.map((g, i) => ({ time: i === 0 ? nowTime : '', dim: segDims[i], text: g.text, kws: g.kws }));
           const prev = (e.segments && e.segments.length) ? e.segments : [];
           e.segments = prev.concat(newSegs);
           e.kws = e.segments.reduce((a, s) => a.concat(s.kws), []);
+          saveEntries(false);
           renderDiary(state.activeDate);
           $('#polishCard').hidden = false;
           $('#polishCard').innerHTML = card.innerHTML;
@@ -1656,6 +2067,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
               const useRaw = btn.dataset.write === 'raw';
               e.segments = null;
               e.content = [useRaw ? state.polish.raw : state.polish.clean];
+              saveEntries(false);
               renderDiary(state.activeDate);
               $('#polishCard').hidden = false;
               showToast(useRaw ? '已把原文写进日记' : '已把润色后的内容写进日记');
@@ -1746,7 +2158,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#scrim').addEventListener('click', closeSheet);
       $('#openDiaryBtn').addEventListener('click', () => {
         closeSheet();
-        try { renderDiary(state.sheetDate || '2'); } catch (err) { console.error(err); }
+        try { renderDiary(state.sheetDate || todayKey); } catch (err) { console.error(err); }
         showScreen('diary');
       });
       $('#backBtn').addEventListener('click', () => { closeSheet(); showScreen('calendar'); });
@@ -1761,12 +2173,17 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#fontBtn').addEventListener('click', () => {
         fontLevel = (fontLevel + 1) % FONTS.length;
         $('#contentArea').className = 'content ' + FONTS[fontLevel].c;
+        try {
+          const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+          localStorage.setItem(PREFS_KEY, JSON.stringify({ ...prefs, fontLevel }));
+        } catch (_) {}
         showToast('阅读字号：' + FONTS[fontLevel].k);
       });
       $('#micZone').addEventListener('click', e => {
         const b = e.target.closest('button.vis-btn');
         if (!b) return;
         entry(state.activeDate).vis = b.dataset.v;
+        saveEntries(true);
         renderVis();
         showToast(visLabel(entry(state.activeDate)) + ' · 只有对应的人能看到这一天');
       });
@@ -1778,11 +2195,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const e = entry(state.activeDate);
         e.content = $('#contentArea').innerText.split('\n').map(s => s.trim()).filter(Boolean);
         e.segments = null;
+        scheduleSave();
       });
       $('#contentArea').addEventListener('blur', () => {
         const e = entry(state.activeDate);
         e.content = $('#contentArea').innerText.split('\n').map(s => s.trim()).filter(Boolean);
         e.segments = null;
+        saveEntries(false);
         $('#contentArea').innerHTML = e.content.map(p => '<p>' + highlight(p, e.kws) + '</p>').join('');
       });
       $('#mediaRow').addEventListener('click', e => {
@@ -1804,7 +2223,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#quickAddBtn').addEventListener('click', () => {
         closeSheet();
         state.justWritten = true;
-        try { renderDiary('18'); } catch (err) { console.error(err); }
+        try { renderDiary(todayKey); } catch (err) { console.error(err); }
         showScreen('diary');
         setTimeout(startListening, 350);
       });
@@ -1813,6 +2232,56 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         openOTD();
       });
       $('#otdClose').addEventListener('click', closeOTD);
+      $('#importBtn').addEventListener('click', openImport);
+      $('#importClose').addEventListener('click', closeImport);
+      $('#importText').addEventListener('input', refreshImportPreview);
+      $('#pasteImportBtn').addEventListener('click', async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (!text.trim()) {
+            showToast('剪贴板里没有文字');
+            return;
+          }
+          $('#importText').value = decodeImportedFile(text);
+          refreshImportPreview();
+          showToast('已从剪贴板读入');
+        } catch (err) {
+          console.error(err);
+          showToast('无法读取剪贴板，请在输入框里长按粘贴');
+        }
+      });
+      $('#importFile').addEventListener('change', event => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('文件超过 2MB，请拆分后再导入');
+          event.target.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          $('#importText').value = decodeImportedFile(String(reader.result || ''));
+          refreshImportPreview();
+          showToast('已读取 ' + file.name);
+        };
+        reader.onerror = () => showToast('文件读取失败');
+        reader.readAsText(file, 'utf-8');
+      });
+      $('#importConfirm').addEventListener('click', () => {
+        const records = state.importParsed || [];
+        if (!records.length) return;
+        const result = mergeImportedRecords(records);
+        saveEntries(false);
+        const latest = records[records.length - 1].key;
+        const date = parseDateKey(latest);
+        currentYear = date.year;
+        currentMonth = date.month;
+        renderCalendar();
+        closeImport();
+        state.sheetDate = latest;
+        openSheet(latest);
+        showToast('已导入 ' + (result.added + result.merged) + ' 篇到对应日期');
+      });
       $('#searchBtn').addEventListener('click', () => { closeSheet(); openSearch(); });
       $('#searchClose').addEventListener('click', closeSearch);
       $('#searchInput').addEventListener('input', renderSearchResults);
@@ -1828,10 +2297,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#playStop').addEventListener('click', () => playCue('stop'));
       $('#playError').addEventListener('click', () => playCue('error'));
 
-      renderFilters();
-      renderCalendar();
+      applyTheme(theme);
       renderVis();
       icons();
+      window.addEventListener('pagehide', () => saveEntries(false));
+      if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+        navigator.serviceWorker.register(new URL('./sw.js', location.href)).catch(err => console.error('Service Worker 注册失败', err));
+      }
       setTimeout(() => {
         const hb = $('#hintBubble');
         if (hb) { hb.classList.add('show'); setTimeout(() => hb.classList.remove('show'), 3800); }
