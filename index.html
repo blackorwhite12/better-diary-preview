@@ -965,8 +965,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
     #diary-mock .otd-view.open { transform: none; visibility: visible; pointer-events: auto; }
     #diary-mock .otd-compare {
-      flex: 1; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) 28px minmax(0, 1fr);
-      gap: 7px; padding: 8px 14px max(18px, env(safe-area-inset-bottom)); overflow: hidden;
+      flex: 1; min-height: 0; display: flex; flex-direction: column;
+      gap: 10px; padding: 8px 14px max(18px, env(safe-area-inset-bottom)); overflow-y: auto;
     }
     #diary-mock .otd-quote {
       margin: 0; padding: 2px 8px 5px; text-align: center;
@@ -974,8 +974,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       color: color-mix(in srgb, #a8442e 72%, var(--ink-soft)); letter-spacing: .04em;
     }
     #diary-mock .otd-card {
-      min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+      flex: 0 0 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
       border-radius: 16px; padding: 13px 14px;
+    }
+    #diary-mock .otd-history-card {
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--paper-deep) 90%, #8da2b1 10%), var(--paper-deep));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 78%, transparent);
     }
     #diary-mock .otd-past-card {
       color: color-mix(in srgb, var(--ink) 78%, var(--ink-soft));
@@ -985,6 +990,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 75%, transparent);
     }
     #diary-mock .otd-today-card {
+      flex: 1 0 auto; min-height: 260px;
       background:
         linear-gradient(145deg, color-mix(in srgb, var(--gold) 7%, var(--paper)), var(--paper) 42%);
       box-shadow:
@@ -992,11 +998,18 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         0 8px 24px color-mix(in srgb, var(--ink) 8%, transparent);
     }
     #diary-mock .otd-card-head {
-      flex: 0 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+      flex: 0 0 auto; display: flex; justify-content: flex-start; align-items: center; gap: 10px;
       padding-bottom: 9px; border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
     }
     #diary-mock .otd-card-head h3 { margin: 2px 0 0; font-size: 15px; font-weight: 650; color: var(--ink); }
     #diary-mock .otd-kicker { display: block; font-size: 9px; letter-spacing: .12em; color: var(--ink-soft); }
+    #diary-mock .otd-index {
+      width: 31px; height: 31px; flex: 0 0 auto; display: grid; place-items: center;
+      border-radius: 9px; font-size: 10px; font-weight: 750; letter-spacing: .05em;
+      color: color-mix(in srgb, var(--gold) 76%, var(--ink));
+      background: color-mix(in srgb, var(--gold) 12%, var(--paper));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 35%, var(--line));
+    }
     #diary-mock .otd-seal {
       width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center;
       border: 1.5px solid color-mix(in srgb, var(--gold) 72%, #a8442e);
@@ -1004,20 +1017,22 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       font-family: "Songti SC", serif; font-size: 12px; font-weight: 700;
       transform: rotate(-4deg);
     }
-    #diary-mock .otd-world-block {
-      flex: 0 0 auto; padding: 8px 0 9px; border-bottom: 1px dashed color-mix(in srgb, var(--line) 70%, transparent);
+    #diary-mock .otd-today-date {
+      margin-left: auto; flex: 0 0 auto; font-size: 10px; font-weight: 650;
+      color: var(--gold); padding: 4px 8px; border-radius: 999px;
+      background: color-mix(in srgb, var(--gold) 11%, transparent);
     }
-    #diary-mock .otd-mini-title { font-size: 9px; color: var(--ink-soft); letter-spacing: .08em; }
-    #diary-mock .otd-world-block ul {
-      list-style: none; padding: 0; margin: 5px 0 0;
-      display: flex; flex-wrap: wrap; gap: 4px 6px;
+    #diary-mock .otd-history-list {
+      list-style: none; padding: 8px 0 0; margin: 0;
+      display: flex; flex-direction: column; gap: 5px;
     }
-    #diary-mock .otd-world-block li {
-      font-size: 9px; line-height: 1.4; color: var(--ink-soft);
-      padding: 2px 6px; border-radius: 999px; background: color-mix(in srgb, var(--paper) 55%, transparent);
+    #diary-mock .otd-history-list li {
+      display: grid; grid-template-columns: 42px 1fr; gap: 8px; align-items: baseline;
+      padding: 6px 8px; border-radius: 8px; font-size: 10px; line-height: 1.5;
+      color: var(--ink-soft); background: color-mix(in srgb, var(--paper) 46%, transparent);
     }
-    #diary-mock .otd-world-block li b { color: var(--ink); margin-right: 3px; }
-    #diary-mock .otd-years { flex: 1; min-height: 0; overflow-y: auto; padding-top: 7px; }
+    #diary-mock .otd-history-list li b { color: var(--ink); }
+    #diary-mock .otd-years { flex: 0 0 auto; max-height: 220px; overflow-y: auto; padding-top: 7px; }
     #diary-mock .otd-past-card .yr-card {
       margin-bottom: 6px; padding: 8px 9px; border-radius: 9px;
       background: color-mix(in srgb, var(--paper) 56%, transparent);
@@ -1029,19 +1044,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       font-size: 11px; line-height: 1.55; display: -webkit-box;
       -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
     }
-    #diary-mock .otd-bridge {
-      display: flex; align-items: center; justify-content: center; gap: 9px;
-      font-size: 9px; font-weight: 650; letter-spacing: .12em; color: var(--ink-soft);
-    }
-    #diary-mock .otd-bridge::before, #diary-mock .otd-bridge::after {
-      content: ''; height: 1px; flex: 1; background: color-mix(in srgb, var(--line) 80%, transparent);
-    }
-    #diary-mock .otd-bridge i { font-style: normal; color: var(--gold); font-size: 15px; line-height: 1; }
     #diary-mock .otd-today-card .meta {
       flex: 0 0 auto; margin-top: 7px; border: none; padding: 0;
       font-size: 9px; line-height: 1.55; color: var(--ink-soft);
     }
-    #diary-mock .otd-today-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-top: 4px; }
+    #diary-mock .otd-today-scroll { flex: 1; min-height: 120px; overflow-y: auto; padding-top: 4px; }
     #diary-mock .otd-today-card .content { font-size: 13px; line-height: 23px; color: var(--ink); }
     #diary-mock .otd-today-card .content p { margin: 0 0 4px; text-indent: 2em; white-space: pre-wrap; }
     #diary-mock .otd-today-card .otd-empty {
@@ -1377,7 +1384,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.2.8（Build 27）</div>
+        <div class="app-version">叨叨日记 · v1.2.9（Build 28）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1470,27 +1477,34 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         </div>
         <div class="otd-compare" id="otdCanvas">
           <p class="otd-quote">历史堆出了世界，而我捏出了自己。</p>
+          <section class="otd-card otd-history-card">
+            <div class="otd-card-head">
+              <span class="otd-index">01</span>
+              <div>
+                <span class="otd-kicker">世界的时间线</span>
+                <h3>历史上的今天</h3>
+              </div>
+            </div>
+            <ul class="otd-history-list" id="otdWorldList"></ul>
+          </section>
           <section class="otd-card otd-past-card">
             <div class="otd-card-head">
-              <span class="otd-kicker">过去的回声</span>
-              <h3>那年这天的我</h3>
-            </div>
-            <div class="otd-world-block">
-              <span class="otd-mini-title">历史上的今天</span>
-              <ul id="otdWorldList"></ul>
+              <span class="otd-index">02</span>
+              <div>
+                <span class="otd-kicker">我的时间线</span>
+                <h3>前几年的今天</h3>
+              </div>
             </div>
             <div class="otd-years" id="otdPastList"></div>
           </section>
-          <div class="otd-bridge" aria-hidden="true">
-            <span>过去</span><i>→</i><span>今天</span>
-          </div>
           <section class="otd-card otd-today-card">
             <div class="otd-card-head">
+              <span class="otd-index">03</span>
               <div>
                 <span class="otd-kicker">此刻的我</span>
-                <h3><span id="otdTodayDate">8月9日</span> · 今天的日记</h3>
+                <h3>今时今日</h3>
               </div>
-              <span class="otd-seal">今</span>
+              <span class="otd-today-date" id="otdTodayDate">8月9日</span>
             </div>
             <div class="meta" id="otdMeta"></div>
             <div class="otd-today-scroll">
