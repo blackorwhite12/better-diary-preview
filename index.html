@@ -1059,7 +1059,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.1.6（Build 16）</div>
+        <div class="app-version">叨叨日记 · v1.1.7（Build 17）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1675,9 +1675,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             if (!state.filter && !state.tagFilter && dotKeys.length > maxDots) b.appendChild(el('span', 'more-dots', '+' + (dotKeys.length - maxDots)));
             if (e.media && e.media.photos && e.media.photos.length) {
               const flag = el('span', 'mflag', '');
-              const fi = el('i', '');
-              fi.setAttribute('data-lucide', 'camera');
-              flag.appendChild(fi);
+              if (options.preview) {
+                flag.appendChild(document.createTextNode('◉'));
+              } else {
+                const fi = el('i', '');
+                fi.setAttribute('data-lucide', 'camera');
+                flag.appendChild(fi);
+              }
               b.appendChild(flag);
             }
             const names = calendarColorKeys(e).map(c => dimOf[c].name).join(' ');
@@ -1694,7 +1698,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           if (isCurrentMonth && d === now.getDate()) b.classList.add('today');
           grid.appendChild(b);
         }
-        icons();
+        if (!options.preview) icons();
         return { monthKeys, monthCount: monthKeys.length, rowCount };
       }
 
@@ -1715,6 +1719,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         } else {
           note.textContent = '本月 ' + stats.monthCount + ' 天有记录 · 点日期看详情';
         }
+        scheduleCalendarPreviewCache();
       }
 
       function changeMonth(delta) {
@@ -2848,6 +2853,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       let swipe = null, suppressClick = false, calendarAnimating = false;
       const calScrEl = $('#calendarScreen');
       const calGridEl = $('#calendarGrid');
+      let calendarPreviewCache = { key: '', items: [] };
+      let calendarPreviewCacheTimer = null;
       const resetCalendarTransform = (animate = true) => {
         calGridEl.style.transition = animate ? 'transform .2s cubic-bezier(.2,.8,.2,1), opacity .2s ease' : 'none';
         calGridEl.style.transform = '';
@@ -2866,17 +2873,51 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         }
         return { year, month };
       };
-      const createCalendarPreview = (target, rect, parentRect) => {
+      const createCalendarPreviewTemplate = target => {
         const page = el('div', 'calendar-preview-page', '');
+        const pageGrid = el('div', 'grid', '');
+        page.appendChild(pageGrid);
+        populateCalendarGrid(pageGrid, target.year, target.month, { preview: true, fade: false });
+        return page;
+      };
+      const buildCalendarPreviewCache = () => {
+        const key = [currentYear, currentMonth, state.filter || '', state.tagFilter || '', theme].join('|');
+        if (calendarPreviewCache.key === key) return;
+        calendarPreviewCache = { key, items: [] };
+        [
+          ['x', -1], ['x', 1], ['y', -1], ['y', 1]
+        ].forEach(([axis, direction]) => {
+          const target = calendarTarget(axis, direction);
+          calendarPreviewCache.items.push({
+            axis, direction, year: target.year, month: target.month,
+            template: createCalendarPreviewTemplate(target)
+          });
+        });
+      };
+      function scheduleCalendarPreviewCache() {
+        clearTimeout(calendarPreviewCacheTimer);
+        calendarPreviewCache.key = '';
+        calendarPreviewCacheTimer = setTimeout(() => {
+          if (swipe || calendarAnimating) {
+            calendarPreviewCacheTimer = setTimeout(scheduleCalendarPreviewCache, 180);
+            return;
+          }
+          buildCalendarPreviewCache();
+        }, 70);
+      }
+      const createCalendarPreview = (target, rect, parentRect, axis, direction) => {
+        buildCalendarPreviewCache();
+        const item = calendarPreviewCache.items.find(entry =>
+          entry.axis === axis && entry.direction === direction &&
+          entry.year === target.year && entry.month === target.month
+        );
+        const page = item ? item.template.cloneNode(true) : createCalendarPreviewTemplate(target);
         page.style.left = (rect.left - parentRect.left) + 'px';
         page.style.top = (rect.top - parentRect.top) + 'px';
         page.style.width = rect.width + 'px';
         page.style.height = rect.height + 'px';
-        const pageGrid = el('div', 'grid', '');
-        page.appendChild(pageGrid);
         calScrEl.appendChild(page);
-        populateCalendarGrid(pageGrid, target.year, target.month, { preview: true, fade: false });
-        return { page, grid: pageGrid, ...target };
+        return { page, grid: page.querySelector('.grid'), ...target };
       };
       const positionPreview = (preview, axis, direction, rect, parentRect) => {
         const baseLeft = rect.left - parentRect.left;
@@ -2889,7 +2930,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (!swipe || swipe.previews) return;
         swipe.previews = [-1, 1].map(direction => {
           const target = calendarTarget(axis, direction);
-          const preview = createCalendarPreview(target, swipe.rect, swipe.parentRect);
+          const preview = createCalendarPreview(target, swipe.rect, swipe.parentRect, axis, direction);
           preview.direction = direction;
           positionPreview(preview, axis, direction, swipe.rect, swipe.parentRect);
           return preview;
@@ -2900,7 +2941,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         (swipe.previews || []).forEach(preview => preview.page.remove());
         swipe.previews = null;
       };
-      const animateCalendarSwap = (axis, direction, rect, fromX, fromY, previews) => {
+      const animateCalendarSwap = (axis, direction, rect, fromX, fromY, previews, speed = 0) => {
         if (calendarAnimating) return;
         calendarAnimating = true;
         const target = calendarTarget(axis, direction);
@@ -2909,14 +2950,18 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const targetX = axis === 'x' ? -direction * size : 0;
         const targetY = axis === 'y' ? -direction * size : 0;
         const easing = 'cubic-bezier(.22,1,.36,1)';
+        const travel = Math.abs(axis === 'x' ? fromX : fromY);
+        const maxTravel = axis === 'x' ? 92 : 58;
+        const progress = Math.min(1, travel / maxTravel);
+        const duration = Math.round(Math.max(135, Math.min(230, 220 - progress * 45 - speed * 35)));
         const currentAnimation = calGridEl.animate([
           { transform: 'translate3d(' + fromX + 'px,' + fromY + 'px,0)', opacity: 1 },
           { transform: 'translate3d(' + targetX + 'px,' + targetY + 'px,0)', opacity: .35 }
-        ], { duration: 280, easing });
+        ], { duration, easing });
         const targetAnimation = targetPreview.page.animate([
           { transform: 'translate3d(' + fromX + 'px,' + fromY + 'px,0)', opacity: 1 },
           { transform: 'translate3d(' + targetX + 'px,' + targetY + 'px,0)', opacity: 1 }
-        ], { duration: 300, easing, fill: 'forwards' });
+        ], { duration: duration + 10, easing, fill: 'forwards' });
         Promise.allSettled([currentAnimation.finished, targetAnimation.finished]).finally(() => {
           currentYear = target.year;
           currentMonth = target.month;
@@ -2930,7 +2975,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (calendarAnimating) return;
         const rect = calGridEl.getBoundingClientRect();
         const parentRect = calScrEl.getBoundingClientRect();
-        const preview = createCalendarPreview(calendarTarget(axis, direction), rect, parentRect);
+        const preview = createCalendarPreview(calendarTarget(axis, direction), rect, parentRect, axis, direction);
         preview.direction = direction;
         positionPreview(preview, axis, direction, rect, parentRect);
         animateCalendarSwap(axis, direction, rect, 0, 0, [preview]);
@@ -2940,10 +2985,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (e.clientX < 18 || e.clientX > calScrEl.clientWidth - 18) return;
         const button = e.target.closest('button');
         if (button && !button.classList.contains('day')) return;
+        clearTimeout(calendarPreviewCacheTimer);
         resetCalendarTransform(false);
         swipe = {
           x: e.clientX, y: e.clientY, id: e.pointerId, time: performance.now(),
           axis: null, moved: false, previews: null, lastX: 0, lastY: 0,
+          lastMoveTime: performance.now(), lastPointerX: e.clientX, lastPointerY: e.clientY,
+          velocityX: 0, velocityY: 0,
           rect: calGridEl.getBoundingClientRect(),
           parentRect: calScrEl.getBoundingClientRect()
         };
@@ -2953,6 +3001,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       calScrEl.addEventListener('pointermove', e => {
         if (!swipe || e.pointerId !== swipe.id) return;
         const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+        const now = performance.now();
+        const dt = Math.max(1, now - swipe.lastMoveTime);
+        swipe.velocityX = (e.clientX - swipe.lastPointerX) / dt;
+        swipe.velocityY = (e.clientY - swipe.lastPointerY) / dt;
+        swipe.lastPointerX = e.clientX;
+        swipe.lastPointerY = e.clientY;
+        swipe.lastMoveTime = now;
         if (!swipe.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 10) {
           swipe.axis = Math.abs(dx) > Math.abs(dy) * 1.15 ? 'x' : 'y';
         }
@@ -3016,10 +3071,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         endSwipe._resetClick = setTimeout(() => { suppressClick = false; }, 420);
         if (horizontal) {
           const direction = dx < 0 ? 1 : -1;
-          animateCalendarSwap('x', direction, finishedSwipe.rect, finishedSwipe.lastX, finishedSwipe.lastY, finishedSwipe.previews || []);
+          animateCalendarSwap('x', direction, finishedSwipe.rect, finishedSwipe.lastX, finishedSwipe.lastY, finishedSwipe.previews || [], Math.abs(finishedSwipe.velocityX));
         } else {
           const direction = dy < 0 ? 1 : -1;
-          animateCalendarSwap('y', direction, finishedSwipe.rect, finishedSwipe.lastX, finishedSwipe.lastY, finishedSwipe.previews || []);
+          animateCalendarSwap('y', direction, finishedSwipe.rect, finishedSwipe.lastX, finishedSwipe.lastY, finishedSwipe.previews || [], Math.abs(finishedSwipe.velocityY));
         }
       };
       calScrEl.addEventListener('pointerup', endSwipe);
