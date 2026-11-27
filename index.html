@@ -235,6 +235,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       pointer-events: none; z-index: 8; box-sizing: border-box; margin: 0;
       background: var(--paper); will-change: transform, opacity;
     }
+    #diary-mock .calendar-preview-page {
+      position: absolute; z-index: 7; pointer-events: none; overflow: hidden;
+      display: flex; flex-direction: column; background: var(--paper);
+      will-change: transform;
+    }
+    #diary-mock .calendar-preview-page .grid { flex: 1; min-height: 0; }
     #diary-mock .screen.off { transform: translateX(100%); pointer-events: none; }
     #diary-mock .cal-head {
       display: flex; align-items: center; padding: 6px 20px 2px;
@@ -1053,7 +1059,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.1.5（Build 15）</div>
+        <div class="app-version">叨叨日记 · v1.1.6（Build 16）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1601,46 +1607,33 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         icons();
       }
 
-      function renderCalendar() {
-        const grid = $('#calendarGrid');
+      const calendarColorKeys = e => Array.from(new Set((e.colors || [e.main, e.sub, e.extra].filter(Boolean)).map(projectDimKey)));
+
+      function populateCalendarGrid(grid, year, month, options = {}) {
         grid.innerHTML = '';
         grid.classList.toggle('filtering', !!(state.filter || state.tagFilter));
-        grid.classList.remove('fade'); void grid.offsetWidth; grid.classList.add('fade');
-        const colorKeys = e => Array.from(new Set((e.colors || [e.main, e.sub, e.extra].filter(Boolean)).map(projectDimKey)));
-        $('#yearEdit').textContent = currentYear + '年';
-        $('#monthEdit').textContent = (currentMonth + 1) + '月';
-        const first = new Date(currentYear, currentMonth, 1);
+        grid.classList.remove('fade');
+        if (options.fade) { void grid.offsetWidth; grid.classList.add('fade'); }
+        const first = new Date(year, month, 1);
         const offset = (first.getDay() + 6) % 7;
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
         const now = new Date();
-        const isCurrentMonth = now.getFullYear() === currentYear && now.getMonth() === currentMonth;
-        const monthPrefix = currentYear + '-' + pad2(currentMonth + 1) + '-';
+        const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month;
+        const monthPrefix = year + '-' + pad2(month + 1) + '-';
         const monthKeys = Object.keys(DAYS).filter(k => k.indexOf(monthPrefix) === 0);
-        const monthCount = monthKeys.length;
-        $('#emptyHint').hidden = monthCount > 0;
         const rowCount = Math.ceil((offset + daysInMonth) / 7);
         const gridH = grid.clientHeight || (rowCount >= 6 ? 430 : 480);
         const rowH = gridH / rowCount;
         const maxDots = rowH >= 62 ? 7 : 5;
         grid.classList.toggle('seven', maxDots === 7);
-        const note = $('#filterNote');
-        if (state.tagFilter) {
-          const tag = CUSTOM_TAGS.find(item => item.id === state.tagFilter);
-          const n = monthKeys.filter(k => (DAYS[k].tags || []).includes(state.tagFilter)).length;
-          note.textContent = '本月 ' + n + ' 天「' + (tag ? tag.name : '标记') + '」· 再点标记取消';
-        } else if (state.filter) {
-          const n = monthKeys.filter(k => colorKeys(DAYS[k]).includes(state.filter)).length;
-          note.textContent = '本月 ' + n + ' 天「' + dimOf[state.filter].name + '」· 再点色块取消';
-        } else {
-          note.textContent = '本月 ' + monthCount + ' 天有记录 · 点日期看详情';
-        }
         for (let i = 0; i < offset; i++) grid.appendChild(el('span', 'day outside', '<span class="num"></span>'));
         for (let d = 1; d <= daysInMonth; d++) {
-          const key = dateKeyOf(currentYear, currentMonth, d);
+          const key = dateKeyOf(year, month, d);
           const e = DAYS[key];
           const b = el('button', 'day', '');
           b.type = 'button';
           b.dataset.d = key;
+          if (options.preview) b.tabIndex = -1;
           const observance = calendarObservance(key);
           const slots = observance.slots;
           const topline = el('span', 'day-topline', '');
@@ -1656,8 +1649,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           topline.appendChild(festivalSlot);
           topline.appendChild(otherSlot);
           b.appendChild(topline);
-          const num = el('span', 'num', String(d));
-          b.appendChild(num);
+          b.appendChild(el('span', 'num', String(d)));
           if (slots.term || slots.festival || displayedOther) {
             b.classList.add('has-observance');
             topline.title = observance.full.concat(firstTag && !observance.badge ? [firstTag.name] : []).join(' · ');
@@ -1665,7 +1657,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           if (e) {
             b.classList.add('has');
             let hit = true;
-            if (state.filter) hit = colorKeys(e).includes(state.filter);
+            if (state.filter) hit = calendarColorKeys(e).includes(state.filter);
             else if (state.tagFilter) hit = (e.tags || []).includes(state.tagFilter);
             if ((state.filter || state.tagFilter) && !hit) b.classList.add('dim');
             if ((state.filter || state.tagFilter) && hit) {
@@ -1675,9 +1667,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             }
             const dots = el('span', 'dots', '');
             const mk = c => { const i = el('i', ''); i.style.background = dimOf[c].color; return i; };
-            const dotKeys = colorKeys(e);
-            const toneRank = d => (dimOf[d].tone === 'warm' ? 0 : 1);
-            dotKeys.sort((a, b) => toneRank(a) - toneRank(b));
+            const dotKeys = calendarColorKeys(e);
+            dotKeys.sort((a, b) => (dimOf[a].tone === 'warm' ? 0 : 1) - (dimOf[b].tone === 'warm' ? 0 : 1));
             const visible = (state.filter || state.tagFilter) ? dotKeys : dotKeys.slice(0, maxDots);
             visible.forEach(c => dots.appendChild(mk(c)));
             b.appendChild(dots);
@@ -1689,17 +1680,14 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
               flag.appendChild(fi);
               b.appendChild(flag);
             }
-            const names = colorKeys(e).map(c => dimOf[c].name).join(' ');
+            const names = calendarColorKeys(e).map(c => dimOf[c].name).join(' ');
             const label = extractDayHighlight(e, key);
-            if (label) {
-              b.classList.add('has-label');
-            }
+            if (label) b.classList.add('has-label');
             b.appendChild(el('span', 'day-label' + (label ? '' : ' empty'), verticalLabelHtml(label)));
             const observanceText = observance.full.length ? '，' + observance.full.join('、') : '';
             b.setAttribute('aria-label', monthDayOf(key) + ' ' + e.wd + ' ' + names + observanceText + (label ? '，关键事：' + label : '') + (e.media ? ' 有照片或视频' : ''));
           } else {
-            const blank = el('span', 'dots', '');
-            b.appendChild(blank);
+            b.appendChild(el('span', 'dots', ''));
             b.appendChild(el('span', 'day-label empty', ''));
             if (observance.full.length) b.setAttribute('aria-label', monthDayOf(key) + '，' + observance.full.join('、'));
           }
@@ -1707,6 +1695,26 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           grid.appendChild(b);
         }
         icons();
+        return { monthKeys, monthCount: monthKeys.length, rowCount };
+      }
+
+      function renderCalendar(options = {}) {
+        const grid = $('#calendarGrid');
+        const stats = populateCalendarGrid(grid, currentYear, currentMonth, { fade: options.fade !== false });
+        $('#yearEdit').textContent = currentYear + '年';
+        $('#monthEdit').textContent = (currentMonth + 1) + '月';
+        $('#emptyHint').hidden = stats.monthCount > 0;
+        const note = $('#filterNote');
+        if (state.tagFilter) {
+          const tag = CUSTOM_TAGS.find(item => item.id === state.tagFilter);
+          const n = stats.monthKeys.filter(k => (DAYS[k].tags || []).includes(state.tagFilter)).length;
+          note.textContent = '本月 ' + n + ' 天「' + (tag ? tag.name : '标记') + '」· 再点标记取消';
+        } else if (state.filter) {
+          const n = stats.monthKeys.filter(k => calendarColorKeys(DAYS[k]).includes(state.filter)).length;
+          note.textContent = '本月 ' + n + ' 天「' + dimOf[state.filter].name + '」· 再点色块取消';
+        } else {
+          note.textContent = '本月 ' + stats.monthCount + ' 天有记录 · 点日期看详情';
+        }
       }
 
       function changeMonth(delta) {
@@ -2846,49 +2854,99 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         calGridEl.style.opacity = '';
         calGridEl.classList.remove('swiping');
       };
-      const animateCalendarPage = (action, axis, direction) => {
+      const calendarTarget = (axis, direction) => {
+        let year = currentYear;
+        let month = currentMonth;
+        if (axis === 'x') {
+          month += direction;
+          if (month < 0) { month = 11; year--; }
+          if (month > 11) { month = 0; year++; }
+        } else {
+          year += direction;
+        }
+        return { year, month };
+      };
+      const createCalendarPreview = (target, rect, parentRect) => {
+        const page = el('div', 'calendar-preview-page', '');
+        page.style.left = (rect.left - parentRect.left) + 'px';
+        page.style.top = (rect.top - parentRect.top) + 'px';
+        page.style.width = rect.width + 'px';
+        page.style.height = rect.height + 'px';
+        const pageGrid = el('div', 'grid', '');
+        page.appendChild(pageGrid);
+        calScrEl.appendChild(page);
+        populateCalendarGrid(pageGrid, target.year, target.month, { preview: true, fade: false });
+        return { page, grid: pageGrid, ...target };
+      };
+      const positionPreview = (preview, axis, direction, rect, parentRect) => {
+        const baseLeft = rect.left - parentRect.left;
+        const baseTop = rect.top - parentRect.top;
+        preview.page.style.left = (axis === 'x' ? baseLeft + direction * rect.width : baseLeft) + 'px';
+        preview.page.style.top = (axis === 'y' ? baseTop + direction * rect.height : baseTop) + 'px';
+        preview.page.style.transform = 'translate3d(0,0,0)';
+      };
+      const prepareCalendarPreviews = axis => {
+        if (!swipe || swipe.previews) return;
+        swipe.previews = [-1, 1].map(direction => {
+          const target = calendarTarget(axis, direction);
+          const preview = createCalendarPreview(target, swipe.rect, swipe.parentRect);
+          preview.direction = direction;
+          positionPreview(preview, axis, direction, swipe.rect, swipe.parentRect);
+          return preview;
+        });
+      };
+      const clearCalendarPreviews = () => {
+        if (!swipe) return;
+        (swipe.previews || []).forEach(preview => preview.page.remove());
+        swipe.previews = null;
+      };
+      const animateCalendarSwap = (axis, direction, rect, fromX, fromY, previews) => {
         if (calendarAnimating) return;
         calendarAnimating = true;
-        resetCalendarTransform(false);
-        const rect = calGridEl.getBoundingClientRect();
-        const parentRect = calScrEl.getBoundingClientRect();
-        const snapshot = calGridEl.cloneNode(true);
-        snapshot.removeAttribute('id');
-        snapshot.classList.remove('fade', 'swiping');
-        snapshot.classList.add('calendar-page-snapshot');
-        snapshot.style.left = (rect.left - parentRect.left) + 'px';
-        snapshot.style.top = (rect.top - parentRect.top) + 'px';
-        snapshot.style.width = rect.width + 'px';
-        snapshot.style.height = rect.height + 'px';
-        snapshot.style.padding = getComputedStyle(calGridEl).padding;
-        calScrEl.appendChild(snapshot);
-        action();
-        const distance = axis === 'x' ? Math.max(42, rect.width * .14) : Math.max(38, rect.height * .08);
-        const outX = axis === 'x' ? -direction * distance : 0;
-        const outY = axis === 'y' ? -direction * distance : 0;
-        const inX = axis === 'x' ? direction * distance : 0;
-        const inY = axis === 'y' ? direction * distance : 0;
+        const target = calendarTarget(axis, direction);
+        const size = axis === 'x' ? rect.width : rect.height;
+        const targetPreview = previews.find(preview => preview.direction === direction);
+        const targetX = axis === 'x' ? -direction * size : 0;
+        const targetY = axis === 'y' ? -direction * size : 0;
         const easing = 'cubic-bezier(.22,1,.36,1)';
-        const outgoing = snapshot.animate([
-          { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 },
-          { transform: 'translate3d(' + outX + 'px,' + outY + 'px,0) scale(.985)', opacity: 0 }
-        ], { duration: 240, easing, fill: 'forwards' });
-        const incoming = calGridEl.animate([
-          { transform: 'translate3d(' + inX + 'px,' + inY + 'px,0) scale(.985)', opacity: 0 },
-          { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 }
+        const currentAnimation = calGridEl.animate([
+          { transform: 'translate3d(' + fromX + 'px,' + fromY + 'px,0)', opacity: 1 },
+          { transform: 'translate3d(' + targetX + 'px,' + targetY + 'px,0)', opacity: .35 }
         ], { duration: 280, easing });
-        Promise.allSettled([outgoing.finished, incoming.finished]).finally(() => {
-          snapshot.remove();
+        const targetAnimation = targetPreview.page.animate([
+          { transform: 'translate3d(' + fromX + 'px,' + fromY + 'px,0)', opacity: 1 },
+          { transform: 'translate3d(' + targetX + 'px,' + targetY + 'px,0)', opacity: 1 }
+        ], { duration: 300, easing, fill: 'forwards' });
+        Promise.allSettled([currentAnimation.finished, targetAnimation.finished]).finally(() => {
+          currentYear = target.year;
+          currentMonth = target.month;
+          renderCalendar({ fade: false });
           resetCalendarTransform(false);
+          previews.forEach(preview => preview.page.remove());
           calendarAnimating = false;
         });
+      };
+      const animateCalendarStep = (axis, direction) => {
+        if (calendarAnimating) return;
+        const rect = calGridEl.getBoundingClientRect();
+        const parentRect = calScrEl.getBoundingClientRect();
+        const preview = createCalendarPreview(calendarTarget(axis, direction), rect, parentRect);
+        preview.direction = direction;
+        positionPreview(preview, axis, direction, rect, parentRect);
+        animateCalendarSwap(axis, direction, rect, 0, 0, [preview]);
       };
       calScrEl.addEventListener('pointerdown', e => {
         if (calendarAnimating) return;
         if (e.clientX < 18 || e.clientX > calScrEl.clientWidth - 18) return;
         const button = e.target.closest('button');
         if (button && !button.classList.contains('day')) return;
-        swipe = { x: e.clientX, y: e.clientY, id: e.pointerId, time: performance.now(), axis: null, moved: false };
+        resetCalendarTransform(false);
+        swipe = {
+          x: e.clientX, y: e.clientY, id: e.pointerId, time: performance.now(),
+          axis: null, moved: false, previews: null, lastX: 0, lastY: 0,
+          rect: calGridEl.getBoundingClientRect(),
+          parentRect: calScrEl.getBoundingClientRect()
+        };
         calScrEl.setPointerCapture(e.pointerId);
         calGridEl.classList.add('swiping');
       });
@@ -2901,19 +2959,29 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (!swipe.axis) return;
         swipe.moved = true;
         if (e.cancelable) e.preventDefault();
+        prepareCalendarPreviews(swipe.axis);
+        let tx = 0, ty = 0;
         if (swipe.axis === 'x') {
           const offset = Math.max(-92, Math.min(92, dx * 0.48));
-          calGridEl.style.transform = 'translate3d(' + offset + 'px,0,0)';
-          calGridEl.style.opacity = String(1 - Math.min(.16, Math.abs(offset) / 700));
+          tx = offset;
         } else {
           const offset = Math.max(-58, Math.min(58, dy * 0.32));
-          calGridEl.style.transform = 'translate3d(0,' + offset + 'px,0) scale(' + (1 - Math.min(.022, Math.abs(offset) / 3200)) + ')';
+          ty = offset;
         }
+        swipe.lastX = tx;
+        swipe.lastY = ty;
+        calGridEl.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0)';
+        calGridEl.style.opacity = String(1 - Math.min(.08, Math.hypot(tx, ty) / 1400));
+        (swipe.previews || []).forEach(preview => {
+          preview.page.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0)';
+        });
       });
       const endSwipe = e => {
         if (!swipe || e.pointerId !== swipe.id) return;
         if (e.type === 'pointercancel') {
+          const previews = swipe.previews || [];
           swipe = null;
+          previews.forEach(preview => preview.page.remove());
           resetCalendarTransform(true);
           return;
         }
@@ -2922,9 +2990,25 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const vx = Math.abs(dx) / elapsed, vy = Math.abs(dy) / elapsed;
         const horizontal = swipe.axis === 'x' && (Math.abs(dx) > 44 || vx > .42);
         const vertical = swipe.axis === 'y' && (Math.abs(dy) > 64 || vy > .5);
+        const finishedSwipe = swipe;
         swipe = null;
         if (!horizontal && !vertical) {
-          resetCalendarTransform(true);
+          if (finishedSwipe.previews) {
+            const animations = [calGridEl.animate([
+              { transform: 'translate3d(' + finishedSwipe.lastX + 'px,' + finishedSwipe.lastY + 'px,0)', opacity: .96 },
+              { transform: 'translate3d(0,0,0)', opacity: 1 }
+            ], { duration: 180, easing: 'cubic-bezier(.22,1,.36,1)' })];
+            finishedSwipe.previews.forEach(preview => animations.push(preview.page.animate([
+              { transform: 'translate3d(' + finishedSwipe.lastX + 'px,' + finishedSwipe.lastY + 'px,0)' },
+              { transform: 'translate3d(0,0,0)' }
+            ], { duration: 180, easing: 'cubic-bezier(.22,1,.36,1)' })));
+            Promise.allSettled(animations.map(animation => animation.finished)).finally(() => {
+              finishedSwipe.previews.forEach(preview => preview.page.remove());
+              resetCalendarTransform(false);
+            });
+          } else {
+            resetCalendarTransform(true);
+          }
           return;
         }
         suppressClick = true;
@@ -2932,10 +3016,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         endSwipe._resetClick = setTimeout(() => { suppressClick = false; }, 420);
         if (horizontal) {
           const direction = dx < 0 ? 1 : -1;
-          animateCalendarPage(() => changeMonth(direction), 'x', direction);
+          animateCalendarSwap('x', direction, finishedSwipe.rect, finishedSwipe.lastX, finishedSwipe.lastY, finishedSwipe.previews || []);
         } else {
           const direction = dy < 0 ? 1 : -1;
-          animateCalendarPage(() => changeYear(direction), 'y', direction);
+          animateCalendarSwap('y', direction, finishedSwipe.rect, finishedSwipe.lastX, finishedSwipe.lastY, finishedSwipe.previews || []);
         }
       };
       calScrEl.addEventListener('pointerup', endSwipe);
@@ -2947,8 +3031,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         }
       });
 
-      $('#prevMonthBtn').addEventListener('click', () => animateCalendarPage(() => changeMonth(-1), 'x', -1));
-      $('#nextMonthBtn').addEventListener('click', () => animateCalendarPage(() => changeMonth(1), 'x', 1));
+      $('#prevMonthBtn').addEventListener('click', () => animateCalendarStep('x', -1));
+      $('#nextMonthBtn').addEventListener('click', () => animateCalendarStep('x', 1));
       $('#themeBtn').addEventListener('click', () => {
         const order = ['warm', 'cool', 'cyber'];
         const next = order[(order.indexOf(theme) + 1) % order.length];
