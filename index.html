@@ -63,6 +63,67 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock[data-theme="warm"] .day { border-radius: 14px; }
     #diary-mock[data-theme="warm"] .f-chip { border-radius: 12px; }
     #diary-mock[data-theme="warm"] .f-chip:hover { transform: translateY(-1px); }
+    #diary-mock[data-theme="warm"] {
+      --paper: #fbf7ee;
+      --paper-deep: #f2ebdd;
+      --ink: #34291c;
+      --ink-soft: #8b7e6a;
+      --line: #dfd3c1;
+      --chip: #f4ecdf;
+    }
+    #diary-mock[data-theme="warm"] .phone {
+      background:
+        radial-gradient(circle at 90% 4%, rgba(245, 205, 118, .22), transparent 28%),
+        radial-gradient(circle at 8% 88%, rgba(239, 210, 170, .17), transparent 31%),
+        repeating-linear-gradient(2deg, rgba(255,255,255,.18) 0 1px, transparent 1px 8px),
+        #fbf7ee;
+      box-shadow: 0 26px 60px rgba(78, 55, 26, .20);
+    }
+    #diary-mock[data-theme="warm"] .bg-fx {
+      opacity: .82;
+      background:
+        radial-gradient(360px 270px at 10% 16%, rgba(255, 205, 144, .15), transparent 70%),
+        radial-gradient(320px 240px at 92% 78%, rgba(255, 226, 170, .12), transparent 72%);
+    }
+    #diary-mock[data-theme="warm"] .bg-fx::before {
+      width: 154px; height: 154px; left: auto; right: -34px; top: -24px;
+      border-radius: 50%; filter: none; opacity: .72; animation: none;
+      background: radial-gradient(circle, #f3cf7d 0 32%, rgba(243, 207, 125, .42) 34% 53%, transparent 72%);
+    }
+    #diary-mock[data-theme="warm"] .bg-fx::after {
+      width: 248px; height: 126px; left: -48px; right: auto; bottom: 34px;
+      border-radius: 0; filter: none; opacity: .52; animation: none; background: transparent;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 130'%3E%3Cpath fill='%23efd2aa' fill-opacity='.58' d='M38 106h177c22 0 37-13 37-31s-15-30-37-30h-4C205 23 186 9 163 9c-18 0-33 9-42 23-8-5-17-8-27-8-25 0-45 18-48 41h-2C19 65 4 78 4 94s12 12 34 12Z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-size: contain;
+    }
+    #diary-mock[data-theme="warm"] .bg-fx .sweep {
+      display: block; inset: 0; opacity: .55; animation: none;
+      background:
+        radial-gradient(circle at 14% 29%, rgba(198, 154, 92, .34) 0 1.5px, transparent 2px) 0 0 / 96px 88px,
+        radial-gradient(circle at 76% 64%, rgba(198, 154, 92, .25) 0 1px, transparent 1.5px) 0 0 / 118px 104px;
+    }
+    #diary-mock[data-theme="warm"] #calendarScreen {
+      background-image:
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(161, 125, 72, .035) 31px 32px),
+        linear-gradient(145deg, rgba(255,255,255,.22), transparent 48%);
+    }
+    #diary-mock[data-theme="warm"] .cal-head h2 { color: #5b4128; letter-spacing: .035em; }
+    #diary-mock[data-theme="warm"] .day.weekend:not(.has):not(.today) {
+      background: rgba(249, 237, 218, .62);
+      box-shadow: inset 0 0 0 1px rgba(213, 190, 157, .68);
+    }
+    #diary-mock[data-theme="warm"] .day.has:not(.today):not(.hit) {
+      background: #fdf9f0;
+      box-shadow: inset 0 0 0 1.5px #d7aa58;
+    }
+    #diary-mock[data-theme="warm"] .day.has::before {
+      content: '✦'; position: absolute; right: 4px; bottom: 3px;
+      font-size: 8px; line-height: 1; color: #d2a352; opacity: .45;
+    }
+    #diary-mock[data-theme="warm"] .day-label { color: #695138; }
+    #diary-mock[data-theme="warm"] .streak {
+      background: #f5e7c9; color: #63461f;
+    }
     #diary-mock[data-theme="cool"] .day { border-radius: 8px; }
     #diary-mock[data-theme="cool"] .day.today { box-shadow: inset 0 0 0 1.5px var(--gold), 0 0 10px color-mix(in srgb, var(--gold) 55%, transparent); }
     #diary-mock[data-theme="cool"] .theme-btn { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 60%, transparent); }
@@ -1169,7 +1230,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.2.1（Build 20）</div>
+        <div class="app-version">叨叨日记 · v1.2.2（Build 21）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1797,6 +1858,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           const b = el('button', 'day', '');
           b.type = 'button';
           b.dataset.d = key;
+          const column = (offset + d - 1) % 7;
+          if (column >= 5) b.classList.add('weekend');
           if (options.preview) b.tabIndex = -1;
           const observance = calendarObservance(key);
           const slots = observance.slots;
