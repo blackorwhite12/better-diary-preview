@@ -1059,7 +1059,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.1.7（Build 17）</div>
+        <div class="app-version">叨叨日记 · v1.1.8（Build 18）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1448,16 +1448,24 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         entry.sample = true;
         DAYS[dateKeyOf(2026, 7, Number(day))] = entry;
       });
+      let samplesCleared = false;
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        samplesCleared = !!saved.samplesCleared;
         Object.entries(saved.entries || {}).forEach(([key, entry]) => {
-          if (/^\d{4}-\d{2}-\d{2}$/.test(key) && entry && Array.isArray(entry.content)) DAYS[key] = entry;
+          if (!entry || entry.sample) return;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(key) && Array.isArray(entry.content)) DAYS[key] = entry;
         });
         Object.entries(saved.labels || {}).forEach(([key, value]) => {
           const dim = DIMS.find(d => d.key === key);
           if (dim && typeof value === 'string' && value.trim()) dim.name = value.trim().slice(0, 6);
         });
       } catch (_) {}
+      if (samplesCleared) {
+        Object.keys(DAYS).forEach(key => {
+          if (DAYS[key] && DAYS[key].sample) delete DAYS[key];
+        });
+      }
       const SCRIPT = [
         { raw: '嗯 今天下午去见小王了', clean: '今天下午去见小王了。' },
         { raw: '然后我们一起喝了咖啡然后聊了挺久的', clean: '我们一起喝了咖啡，聊了挺久的。' },
@@ -1478,12 +1486,57 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       const entry = key => DAYS[key] || (DAYS[key] = { wd: weekdayOf(key), wx: '晴', loc: '上海', main: null, sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
 
       let saveTimer = null;
+      function isRealEntry(e) {
+        if (!e || e.sample) return false;
+        const placeholder = '今天想记录点什么，点麦克风直接说。';
+        return (e.content || []).some(text => text && text.trim() && text.trim() !== placeholder) ||
+          (e.segments || []).some(segment => segment && String(segment.text || '').trim()) ||
+          (e.tags || []).length > 0 ||
+          !!e.main ||
+          !!(e.highlight && e.highlightSource === 'manual') ||
+          !!(e.media && e.media.photos && e.media.photos.length);
+      }
+      function pruneSampleEntriesIfNeeded() {
+        if (samplesCleared) return false;
+        const realEntries = Object.keys(DAYS).filter(key => isRealEntry(DAYS[key]));
+        if (realEntries.length < 2) return false;
+        Object.keys(DAYS).forEach(key => {
+          if (DAYS[key] && DAYS[key].sample) delete DAYS[key];
+        });
+        samplesCleared = true;
+        return true;
+      }
+      function updateStreak() {
+        const realDates = new Set(Object.keys(DAYS).filter(key => isRealEntry(DAYS[key])));
+        const cursor = new Date();
+        const currentKey = dateKeyOf(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+        if (!realDates.has(currentKey)) cursor.setDate(cursor.getDate() - 1);
+        let streak = 0;
+        while (realDates.has(dateKeyOf(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()))) {
+          streak++;
+          cursor.setDate(cursor.getDate() - 1);
+        }
+        const wrap = $('#streakWrap');
+        const badge = $('#streakBadge');
+        if (wrap) wrap.hidden = streak === 0;
+        if (badge) {
+          badge.textContent = '🔥 ' + streak;
+          badge.setAttribute('aria-label', '连续写日记 ' + streak + ' 天，点击隐藏说明');
+        }
+      }
       function saveEntries(announce) {
         clearTimeout(saveTimer);
         saveTimer = null;
+        pruneSampleEntriesIfNeeded();
         try {
           const labels = Object.fromEntries(DIMS.map(d => [d.key, d.name]));
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), entries: DAYS, labels }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            version: 1,
+            updatedAt: new Date().toISOString(),
+            entries: DAYS,
+            labels,
+            samplesCleared
+          }));
           if (announce) showToast('已保存到本机');
         } catch (err) {
           console.error(err);
@@ -1719,6 +1772,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         } else {
           note.textContent = '本月 ' + stats.monthCount + ' 天有记录 · 点日期看详情';
         }
+        updateStreak();
         scheduleCalendarPreviewCache();
       }
 
@@ -3268,7 +3322,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#playStop').addEventListener('click', () => playCue('stop'));
       $('#playError').addEventListener('click', () => playCue('error'));
 
+      const removedInitialSamples = pruneSampleEntriesIfNeeded();
       applyTheme(theme);
+      if (removedInitialSamples) saveEntries(false);
       renderVis();
       icons();
       window.addEventListener('pagehide', () => saveEntries(false));
