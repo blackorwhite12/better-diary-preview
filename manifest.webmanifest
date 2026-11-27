@@ -1,7 +1,7 @@
 {
   "id": "./index.html",
-  "name": "更好的日记本",
-  "short_name": "日记本",
+  "name": "叨叨日记",
+  "short_name": "叨叨",
   "description": "把每天的经历，留在自己的手机里。",
   "lang": "zh-CN",
   "start_url": "./index.html",
