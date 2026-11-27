@@ -715,6 +715,25 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       border: none; border-radius: 10px; background: linear-gradient(135deg, #eed9a8, #d8ad5f);
       color: #4a3215; font-size: 12px; font-weight: 600; cursor: pointer;
     }
+    #diary-mock .tag-color-palette-wrap { margin-top: 10px; }
+    #diary-mock .tag-color-palette-title { font-size: 10px; color: var(--ink-soft); margin-bottom: 7px; }
+    #diary-mock .tag-color-palette { display: flex; flex-wrap: wrap; gap: 7px; }
+    #diary-mock .tag-color-option {
+      position: relative; width: 27px; height: 27px; padding: 0; border-radius: 50%;
+      border: 2px solid var(--paper); background: var(--swatch); cursor: pointer;
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--swatch) 65%, var(--line));
+    }
+    #diary-mock .tag-color-option.on {
+      box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--swatch);
+    }
+    #diary-mock .tag-color-option:disabled {
+      cursor: not-allowed; opacity: .34;
+      background: repeating-linear-gradient(135deg, var(--swatch) 0 4px, var(--paper) 4px 7px);
+    }
+    #diary-mock .tag-color-option:disabled::after {
+      content: '×'; position: absolute; inset: 0; display: grid; place-items: center;
+      color: var(--ink-soft); font-size: 13px; font-weight: 700;
+    }
     #diary-mock .s-result {
       display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px;
       background: var(--paper-deep); box-shadow: inset 0 0 0 1px var(--line);
@@ -1270,7 +1289,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.3.1（Build 24）</div>
+        <div class="app-version">叨叨日记 · v1.2.6（Build 25）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1436,6 +1455,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             <input type="color" id="tagColor" value="#5f9c76" aria-label="标记颜色">
             <button type="button" id="tagAdd">新增标记</button>
           </div>
+          <div class="tag-color-palette-wrap">
+            <div class="tag-color-palette-title">可选颜色 · 只显示尚未使用的颜色</div>
+            <div class="tag-color-palette" id="tagColorPalette"></div>
+          </div>
         </div>
       </div>
 
@@ -1511,6 +1534,26 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         { id: 'school', name: '上学', color: '#5f9c76' },
         { id: 'period', name: '大姨妈', color: '#d76b86' }
       ];
+      const TAG_COLOR_PALETTE = [
+        '#5f9c76', '#d76b86', '#5f91c7', '#d86d64', '#3e4249', '#c7923e',
+        '#4f9b9a', '#8b78b5', '#d47c48', '#5968b1', '#8b6f55', '#8ca547',
+        '#7b8490', '#5da9c9', '#c7789a', '#d2a267', '#6f9b62', '#a56f9e'
+      ];
+      const normalizeColor = value => {
+        const color = String(value || '').trim().toLowerCase();
+        if (/^#[0-9a-f]{6}$/.test(color)) return color;
+        if (/^#[0-9a-f]{3}$/.test(color)) {
+          return '#' + color.slice(1).split('').map(char => char + char).join('');
+        }
+        return color;
+      };
+      const colorOwner = (color, exceptId = '') => {
+        const normalized = normalizeColor(color);
+        const dimension = DIMS.find(item => normalizeColor(item.color) === normalized);
+        if (dimension) return dimension.name;
+        const tag = CUSTOM_TAGS.find(item => item.id !== exceptId && normalizeColor(item.color) === normalized);
+        return tag ? tag.name : '';
+      };
       try {
         const savedBirthdays = JSON.parse(localStorage.getItem(BIRTHDAYS_KEY) || '[]');
         if (Array.isArray(savedBirthdays)) BIRTHDAYS = savedBirthdays;
@@ -2950,6 +2993,35 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (state.screen === 'diary') renderEntryColors(state.activeDate);
       }
 
+      function availableTagColors(exceptId = '') {
+        return TAG_COLOR_PALETTE.filter(color => !colorOwner(color, exceptId));
+      }
+
+      function renderTagColorPalette() {
+        const wrap = $('#tagColorPalette');
+        if (!wrap) return;
+        wrap.innerHTML = '';
+        const selected = normalizeColor($('#tagColor').value);
+        const available = availableTagColors();
+        if (available.length && !available.includes(selected)) $('#tagColor').value = available[0];
+        $('#tagColor').dataset.valid = normalizeColor($('#tagColor').value);
+        if (!available.length) {
+          wrap.appendChild(el('div', 'import-summary', '预设颜色都已使用，可从取色器选择其他颜色'));
+          return;
+        }
+        available.forEach(color => {
+          const button = el('button', 'tag-color-option' + (normalizeColor($('#tagColor').value) === color ? ' on' : ''), '');
+          button.type = 'button';
+          button.style.setProperty('--swatch', color);
+          button.setAttribute('aria-label', '选择颜色 ' + color);
+          button.addEventListener('click', () => {
+            $('#tagColor').value = color;
+            renderTagColorPalette();
+          });
+          wrap.appendChild(button);
+        });
+      }
+
       function renderTagManager() {
         const list = $('#tagManagerList');
         list.innerHTML = '';
@@ -2977,10 +3049,18 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             refreshTagDependentViews();
           });
           color.addEventListener('input', () => {
-            tag.color = color.value;
-            swatch.style.setProperty('--swatch', color.value);
+            const next = normalizeColor(color.value);
+            const owner = colorOwner(next, tag.id);
+            if (owner) {
+              color.value = tag.color;
+              showToast('颜色已被「' + owner + '」使用');
+              return;
+            }
+            tag.color = next;
+            swatch.style.setProperty('--swatch', next);
             saveCustomTags();
             refreshTagDependentViews();
+            renderTagColorPalette();
           });
           remove.addEventListener('click', () => {
             if (!confirm('删除标记「' + tag.name + '」？相关日期上的这个标记也会移除。')) return;
@@ -3000,6 +3080,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           row.appendChild(remove);
           list.appendChild(row);
         });
+        renderTagColorPalette();
       }
 
       function openTagManager() {
@@ -3020,12 +3101,21 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           nameInput.focus();
           return;
         }
+        const color = normalizeColor($('#tagColor').value);
+        const owner = colorOwner(color);
+        if (owner) {
+          showToast('颜色已被「' + owner + '」使用，请换一个');
+          renderTagColorPalette();
+          return;
+        }
         CUSTOM_TAGS.push({
           id: 'tag-' + Date.now(),
           name,
-          color: $('#tagColor').value
+          color
         });
         nameInput.value = '';
+        const nextColor = availableTagColors()[0];
+        if (nextColor) $('#tagColor').value = nextColor;
         saveCustomTags();
         renderTagManager();
         refreshTagDependentViews();
@@ -3868,6 +3958,18 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       });
       $('#tagClose').addEventListener('click', closeTagManager);
       $('#tagAdd').addEventListener('click', addCustomTag);
+      $('#tagColor').addEventListener('input', event => {
+        const input = event.currentTarget;
+        const color = normalizeColor(input.value);
+        const owner = colorOwner(color);
+        if (owner) {
+          input.value = input.dataset.valid || availableTagColors()[0] || input.value;
+          showToast('颜色已被「' + owner + '」使用');
+          return;
+        }
+        input.dataset.valid = color;
+        renderTagColorPalette();
+      });
       $('#tagName').addEventListener('keydown', event => {
         if (event.key === 'Enter') {
           event.preventDefault();
