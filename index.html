@@ -713,8 +713,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .share-top { display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: 600; }
     #diary-mock .share-seal {
       font-family: "Songti SC", serif; color: light-dark(#a8442e, #e0937c);
-      border: 2px solid currentColor; border-radius: 6px; width: 30px; height: 30px;
-      display: flex; align-items: center; justify-content: center; font-size: 13px;
+      border: 2px solid currentColor; border-radius: 6px; width: 40px; height: 30px;
+      display: flex; align-items: center; justify-content: center; font-size: 11px;
     }
     #diary-mock .share-dots { display: flex; gap: 4px; margin: 12px 0 8px; }
     #diary-mock .share-dots i { width: 8px; height: 8px; border-radius: 50%; }
@@ -960,7 +960,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .seal {
       position: absolute; top: 8px; right: 12px; z-index: 3; pointer-events: none;
       width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-      border-radius: 6px; font-size: 15px; font-weight: 700; font-family: "Songti SC", "STSong", serif;
+      border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: .02em;
+      font-family: "Songti SC", "STSong", serif;
       color: light-dark(#a8442e, #e0937c); border: 2px solid light-dark(#a8442e, #e0937c);
       opacity: 0;
     }
@@ -1230,7 +1231,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.2.2（Build 21）</div>
+        <div class="app-version">叨叨日记 · v1.2.3（Build 22）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1258,7 +1259,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             <div class="meta" id="metaLine"></div>
             <div class="content" id="contentArea" contenteditable="true"></div>
           </div>
-          <div class="seal" id="diarySeal" hidden>留</div>
+          <div class="seal" id="diarySeal" aria-label="已保存" hidden>已存</div>
         </div>
         <div class="entry-colors">
           <span class="entry-colors-label">颜色</span>
@@ -1401,7 +1402,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
       <div class="share-view" id="shareView">
         <div class="share-card">
-          <div class="share-top"><span id="shareDate">8月9日 · 今天</span><span class="share-seal">留</span></div>
+          <div class="share-top"><span id="shareDate">8月9日 · 今天</span><span class="share-seal">已存</span></div>
           <div class="share-dots" id="shareDots"></div>
           <div class="share-text" id="shareText"></div>
           <button type="button" class="share-action" id="shareAction">分享到朋友圈（演示）</button>
