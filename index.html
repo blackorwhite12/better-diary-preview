@@ -472,7 +472,21 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .f-chip.cool { color: var(--ink-soft); opacity: .82; }
     #diary-mock .f-divider { width: 70%; height: 1px; background: var(--line); margin: 4px auto; opacity: .6; }
     #diary-mock .f-chip .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--fc) 35%, transparent); }
-    #diary-mock .f-chip.on { color: var(--ink); background: color-mix(in srgb, var(--fc) 18%, transparent); }
+    #diary-mock .f-chip.on {
+      color: var(--ink); font-weight: 700;
+      background: color-mix(in srgb, var(--fc) 24%, var(--paper));
+      box-shadow:
+        inset 0 0 0 1.5px var(--fc),
+        0 0 0 2px color-mix(in srgb, var(--fc) 24%, transparent);
+      transform: translateY(-1px);
+    }
+    #diary-mock .f-chip.on::after {
+      content: '✓'; font-size: 9px; line-height: 1; font-weight: 800;
+      color: color-mix(in srgb, var(--fc) 72%, var(--ink));
+    }
+    #diary-mock .f-chip.on .dot {
+      box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px var(--fc);
+    }
     #diary-mock .chip-edit {
       width: 3.6em; font-size: 11px; color: var(--ink); text-align: center;
       background: var(--paper-deep); border: 1px solid var(--gold); border-radius: 6px;
@@ -559,6 +573,15 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       box-shadow: inset 0 0 0 2.5px var(--hit);
     }
     #diary-mock .day.today.hit { background: transparent; }
+    #diary-mock .day.selected {
+      z-index: 2; transform: translateY(-1px);
+      background: color-mix(in srgb, var(--gold) 28%, var(--paper)) !important;
+      box-shadow:
+        inset 0 0 0 3px var(--gold),
+        0 0 0 2px color-mix(in srgb, var(--gold) 26%, transparent) !important;
+    }
+    #diary-mock .day.selected .num { font-size: 17px; font-weight: 800; }
+    #diary-mock .day.today.selected .num::before { box-shadow: 0 0 0 2px var(--paper); }
     #diary-mock .cal-foot { padding: 12px 14px 10px; display: flex; justify-content: center; }
     #diary-mock .cal-foot { gap: 8px; }
     #diary-mock .app-version {
@@ -653,7 +676,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       display: inline-flex; align-items: center; gap: 5px;
       color: var(--ink-soft); font-size: 10px; padding: 4px 8px; cursor: pointer;
     }
-    #diary-mock .s-tag.on { color: var(--tag); border-color: var(--tag); background: color-mix(in srgb, var(--tag) 13%, transparent); }
+    #diary-mock .s-tag.on {
+      color: var(--tag); border-color: var(--tag); font-weight: 700;
+      background: color-mix(in srgb, var(--tag) 16%, transparent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--tag) 20%, transparent);
+    }
+    #diary-mock .s-tag.on::after { content: '✓'; font-size: 9px; line-height: 1; font-weight: 800; }
     #diary-mock .s-tag .s-tag-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tag); flex: 0 0 auto; }
     #diary-mock .tag-manager-list { display: flex; flex-direction: column; gap: 7px; }
     #diary-mock .tag-manager-row {
@@ -956,10 +984,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
     #diary-mock .entry-color .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ec); }
     #diary-mock .entry-color.on {
-      color: var(--ink); border-color: var(--ec);
+      color: var(--ink); border-color: var(--ec); font-weight: 700;
       background: color-mix(in srgb, var(--ec) 13%, transparent);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ec) 25%, transparent);
+      box-shadow:
+        inset 0 0 0 1.5px color-mix(in srgb, var(--ec) 70%, transparent),
+        0 0 0 2px color-mix(in srgb, var(--ec) 18%, transparent);
     }
+    #diary-mock .entry-color.on::after { content: '✓'; font-size: 9px; font-weight: 800; color: var(--ec); }
     #diary-mock .entry-color.manage { color: var(--ink-soft); border-style: dashed; }
     #diary-mock .paper .rules { position: absolute; inset: 0; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, var(--line) 27px, var(--line) 28px); opacity: .55; }
     #diary-mock .paper .body { position: absolute; inset: 0; overflow: hidden; padding: 0 58px 0 18px; }
@@ -1239,7 +1270,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.3.0（Build 23）</div>
+        <div class="app-version">叨叨日记 · v1.3.1（Build 24）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1985,6 +2016,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           const b = el('button', 'day', '');
           b.type = 'button';
           b.dataset.d = key;
+          if (state.sheetDate === key) b.classList.add('selected');
           const column = (offset + d - 1) % 7;
           if (column >= 5) b.classList.add('weekend');
           if (options.preview) b.tabIndex = -1;
@@ -2127,12 +2159,19 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         $('#scrim').classList.add('show');
         $('#sheet').classList.add('open');
         state.sheetDate = key;
+        markCalendarSelection(key);
         icons();
       }
 
       function closeSheet() {
         $('#scrim').classList.remove('show');
         $('#sheet').classList.remove('open');
+      }
+
+      function markCalendarSelection(key) {
+        $$('#calendarGrid button.day').forEach(day => {
+          day.classList.toggle('selected', day.dataset.d === key);
+        });
       }
 
       function clearPlaceholderContent(e) {
