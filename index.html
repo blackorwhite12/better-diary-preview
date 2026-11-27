@@ -89,37 +89,50 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
     #diary-mock[data-theme="cyber"] .theme-btn { box-shadow: inset 0 0 0 1px var(--gold), 0 0 8px color-mix(in srgb, var(--gold) 50%, transparent); }
     #diary-mock[data-theme="botanical"] {
-      --paper: #f4f1e7;
-      --paper-deep: #ebe7d9;
-      --ink: #29362e;
-      --ink-soft: #778175;
-      --line: #cbd1c3;
-      --gold: #81966f;
-      --chip: #e8ecdf;
+      --paper: #edf0e1;
+      --paper-deep: #e2e7d3;
+      --ink: #203429;
+      --ink-soft: #68796a;
+      --line: #b8c5ad;
+      --gold: #718b5f;
+      --chip: #dbe5cf;
       --scrim: rgba(34, 45, 34, .28);
-      --otd-top: #eef0e5;
-      background: #ebe8dc;
+      --otd-top: #e8eddc;
+      background: #e5ead9;
     }
     #diary-mock[data-theme="botanical"] .phone {
       background:
-        radial-gradient(circle at 12% 8%, rgba(129, 150, 111, .11), transparent 27%),
-        radial-gradient(circle at 90% 88%, rgba(176, 151, 93, .09), transparent 26%),
-        #f4f1e7;
-      border-color: #cfd5c8;
-      box-shadow: 0 26px 60px rgba(49, 61, 43, .18);
+        radial-gradient(circle at 8% 4%, rgba(104, 132, 85, .18), transparent 30%),
+        radial-gradient(circle at 94% 90%, rgba(128, 151, 104, .15), transparent 30%),
+        repeating-linear-gradient(7deg, rgba(255,255,255,.16) 0 1px, transparent 1px 7px),
+        #edf0e1;
+      border-color: #b8c5ad;
+      box-shadow: 0 28px 64px rgba(43, 60, 39, .22);
     }
     #diary-mock[data-theme="botanical"] #calendarScreen {
       background-image:
-        repeating-linear-gradient(0deg, transparent 0 31px, rgba(103, 122, 93, .045) 31px 32px),
-        radial-gradient(circle at 86% 10%, rgba(129, 150, 111, .10), transparent 20%);
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(78, 104, 72, .065) 31px 32px),
+        radial-gradient(circle at 82% 7%, rgba(99, 130, 85, .15), transparent 25%),
+        linear-gradient(145deg, rgba(255,255,255,.22), transparent 45%);
     }
     #diary-mock[data-theme="botanical"] .bg-fx {
-      opacity: .34;
-      background:
-        radial-gradient(440px 330px at 6% 18%, rgba(139, 164, 121, .22), transparent 66%),
-        radial-gradient(380px 300px at 94% 82%, rgba(190, 165, 107, .13), transparent 68%);
+      opacity: .9;
+      background: radial-gradient(420px 340px at 10% 12%, rgba(108, 137, 88, .14), transparent 68%);
     }
     #diary-mock[data-theme="botanical"] .bg-fx .sweep { display: none; }
+    #diary-mock[data-theme="botanical"] .bg-fx::before,
+    #diary-mock[data-theme="botanical"] .bg-fx::after {
+      width: 220px; height: 300px; border-radius: 0; filter: none; opacity: .15; animation: none;
+      background-color: transparent;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 300'%3E%3Cg fill='%236d8860'%3E%3Cpath d='M109 285c4-76 7-160 0-262' stroke='%236d8860' stroke-width='3' fill='none'/%3E%3Cpath d='M111 235c-36-3-65-25-76-61 37 2 68 23 76 61Z'/%3E%3Cpath d='M110 199c36-4 65-25 77-61-38 2-68 23-77 61Z'/%3E%3Cpath d='M111 159c-29-3-52-20-62-49 30 2 54 19 62 49Z'/%3E%3Cpath d='M111 127c29-4 52-21 62-50-30 2-54 20-62 50Z'/%3E%3Cpath d='M111 93c-22-2-39-15-47-36 23 1 41 14 47 36Z'/%3E%3Cpath d='M111 66c21-3 38-16 46-37-23 2-40 15-46 37Z'/%3E%3C/g%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-size: contain;
+    }
+    #diary-mock[data-theme="botanical"] .bg-fx::before {
+      top: 54px; left: -84px; transform: rotate(20deg);
+    }
+    #diary-mock[data-theme="botanical"] .bg-fx::after {
+      right: -88px; bottom: 28px; transform: rotate(198deg); opacity: .12;
+    }
     #diary-mock[data-theme="botanical"] .cal-head h2 {
       font-family: "Songti SC", "STSong", serif; color: #405442; letter-spacing: .045em;
     }
@@ -138,16 +151,21 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
     #diary-mock[data-theme="botanical"] .grid { gap: 6px; }
     #diary-mock[data-theme="botanical"] .day {
-      border-radius: 8px; background: rgba(251, 249, 242, .72);
-      box-shadow: inset 0 0 0 1px rgba(143, 158, 132, .44);
+      border-radius: 7px; background: rgba(250, 250, 242, .72);
+      box-shadow: inset 0 0 0 1px rgba(119, 142, 106, .48);
     }
     #diary-mock[data-theme="botanical"] .day.has {
-      background: rgba(248, 248, 239, .94);
-      box-shadow: inset 0 0 0 1.5px #81966f;
+      background: rgba(248, 249, 238, .97);
+      box-shadow: inset 0 0 0 1.5px #708b5f;
     }
     #diary-mock[data-theme="botanical"] .day.has:not(.today):not(.hit) {
       background: #fbfaf3;
-      box-shadow: inset 0 0 0 1.5px #81966f;
+      box-shadow: inset 0 0 0 1.5px #708b5f;
+    }
+    #diary-mock[data-theme="botanical"] .day.has:not(.today)::before {
+      content: '❧'; position: absolute; right: 4px; bottom: 3px;
+      font-family: "Songti SC", serif; font-size: 8px; line-height: 1;
+      color: #7d976a; opacity: .4;
     }
     #diary-mock[data-theme="botanical"] .day.today {
       background: color-mix(in srgb, #f8f5e8 90%, #c9aa67 10%);
@@ -155,7 +173,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     }
     #diary-mock[data-theme="botanical"] .day.today .num::before { background: #cdb077; }
     #diary-mock[data-theme="botanical"] .day-label {
-      color: #435a46; letter-spacing: .08em;
+      color: #324e39; letter-spacing: .08em;
     }
     #diary-mock[data-theme="botanical"] .day-topline .term { color: #7b896c; }
     #diary-mock[data-theme="botanical"] .day-topline .festival { color: #a05e4b; }
@@ -168,10 +186,10 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       border-color: #bfc9ba; color: #667263; background: rgba(248, 246, 237, .58);
     }
     #diary-mock[data-theme="botanical"] .paper {
-      background-color: #f8f5ea;
+      background-color: #f8f7ed;
       background-image:
-        radial-gradient(circle at 88% 12%, rgba(126, 150, 107, .09), transparent 22%),
-        repeating-linear-gradient(0deg, transparent 0 27px, rgba(112, 128, 102, .18) 27px 28px);
+        radial-gradient(circle at 88% 12%, rgba(102, 133, 83, .12), transparent 24%),
+        repeating-linear-gradient(0deg, transparent 0 27px, rgba(96, 119, 86, .20) 27px 28px);
     }
     #diary-mock[data-theme="botanical"] .entry-color.on {
       background: color-mix(in srgb, var(--ec) 13%, #f8f5ea);
@@ -1151,7 +1169,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.2.0（Build 19）</div>
+        <div class="app-version">叨叨日记 · v1.2.1（Build 20）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
