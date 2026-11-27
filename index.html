@@ -933,6 +933,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .paper {
       flex: 1; overflow: hidden; position: relative; margin: 0 14px; border-radius: 16px;
       background: var(--paper-deep);
+      touch-action: pan-y;
+    }
+    #diary-mock .paper.swiping { user-select: none; }
+    #diary-mock .diary-drag-page {
+      position: absolute; z-index: 7; margin: 0; pointer-events: none; box-sizing: border-box;
+      background: var(--paper-deep); will-change: transform;
     }
     #diary-mock .entry-colors {
       flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 8px 14px 0;
@@ -1137,6 +1143,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       transform: translateY(115%); transition: transform .3s cubic-bezier(.32,.72,0,1);
     }
     #diary-mock .sheet.open { transform: translateY(0); }
+    #diary-mock .sheet.swiping { transition: none !important; }
+    #diary-mock .sheet.sheet-clone { pointer-events: none; z-index: 31; }
     #diary-mock .s-close {
       position: absolute; top: 10px; right: 10px; width: 30px; height: 30px;
       border: none; border-radius: 50%; background: var(--chip); color: var(--ink);
@@ -1231,7 +1239,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.2.3（Build 22）</div>
+        <div class="app-version">叨叨日记 · v1.3.0（Build 23）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1561,6 +1569,124 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const d = parseDateKey(key);
         return d.year + '年' + (d.month + 1) + '月' + d.day + '日';
       };
+      const shiftDateKey = (key, amount) => {
+        const d = parseDateKey(key);
+        const date = new Date(d.year, d.month, d.day + amount);
+        return dateKeyOf(date.getFullYear(), date.getMonth(), date.getDate());
+      };
+      const LOCATION_CITIES = [
+        ['上海',31.2304,121.4737],['杭州',30.2741,120.1551],['北京',39.9042,116.4074],['南京',32.0603,118.7969],
+        ['苏州',31.2989,120.5853],['宁波',29.8683,121.5440],['温州',27.9938,120.6994],['绍兴',30.0303,120.5802],
+        ['嘉兴',30.7461,120.7555],['湖州',30.8943,120.0868],['金华',29.0784,119.6474],['台州',28.6564,121.4208],
+        ['舟山',29.9853,122.2072],['义乌',29.3069,120.0750],['昆山',31.3856,120.9807],['无锡',31.4912,120.3119],
+        ['常州',31.8107,119.9741],['南通',31.9802,120.8943],['扬州',32.3942,119.4129],['镇江',32.1878,119.4250],
+        ['泰州',32.4558,119.9229],['徐州',34.2044,117.2858],['合肥',31.8206,117.2272],['芜湖',31.3525,118.4331],
+        ['福州',26.0745,119.2965],['厦门',24.4798,118.0894],['泉州',24.8741,118.6757],['南昌',28.6829,115.8582],
+        ['广州',23.1291,113.2644],['深圳',22.5431,114.0579],['佛山',23.0215,113.1214],['东莞',23.0207,113.7518],
+        ['珠海',22.2707,113.5767],['中山',22.5176,113.3928],['惠州',23.1115,114.4153],['汕头',23.3541,116.6822],
+        ['南宁',22.8170,108.3665],['桂林',25.2736,110.2900],['海口',20.0440,110.1999],['三亚',18.2528,109.5119],
+        ['武汉',30.5928,114.3055],['长沙',28.2282,112.9388],['郑州',34.7466,113.6254],['洛阳',34.6197,112.4540],
+        ['济南',36.6512,117.1201],['青岛',36.0671,120.3826],['烟台',37.4638,121.4479],['威海',37.5131,122.1204],
+        ['天津',39.0842,117.2009],['石家庄',38.0428,114.5149],['太原',37.8706,112.5489],['西安',34.3416,108.9398],
+        ['成都',30.5728,104.0668],['重庆',29.5630,106.5516],['昆明',25.0389,102.7183],['贵阳',26.6470,106.6302],
+        ['沈阳',41.8057,123.4315],['大连',38.9140,121.6147],['长春',43.8171,125.3235],['哈尔滨',45.8038,126.5350],
+        ['呼和浩特',40.8424,111.7492],['乌鲁木齐',43.8256,87.6168],['兰州',36.0611,103.8343],['西宁',36.6171,101.7782],
+        ['银川',38.4872,106.2309],['拉萨',29.6520,91.1721],['香港',22.3193,114.1694],['澳门',22.1987,113.5439],
+        ['台北',25.0330,121.5654],['秦皇岛',39.9354,119.6005],['唐山',39.6305,118.1802],['保定',38.8740,115.4646],
+        ['廊坊',39.5380,116.6836]
+      ].map(([name, lat, lon]) => ({ name, lat, lon }));
+      let deviceCityCache = '';
+      let deviceCityRequest = null;
+      function cityFromText(text) {
+        const value = String(text || '').replace(/\s+/g, '');
+        if (!value) return '';
+        let best = null;
+        LOCATION_CITIES.forEach(city => {
+          let index = value.indexOf(city.name);
+          if (index < 0) return;
+          let lastIndex = index;
+          while ((index = value.indexOf(city.name, index + 1)) >= 0) lastIndex = index;
+          const before = value.slice(Math.max(0, lastIndex - 3), lastIndex);
+          const score = /(?:在|到|去了|去|回到|回|来到|抵达|位于|住在)/.test(before) ? 3 : 1;
+          if (!best || score > best.score || (score === best.score && lastIndex > best.index)) {
+            best = { name: city.name, score, index: lastIndex };
+          }
+        });
+        return best ? best.name : '';
+      }
+      function nearestCity(latitude, longitude) {
+        let best = null;
+        LOCATION_CITIES.forEach(city => {
+          const toRad = value => value * Math.PI / 180;
+          const dLat = toRad(city.lat - latitude);
+          const dLon = toRad(city.lon - longitude);
+          const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(latitude)) * Math.cos(toRad(city.lat)) * Math.sin(dLon / 2) ** 2;
+          const distance = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          if (!best || distance < best.distance) best = { name: city.name, distance };
+        });
+        return best && best.distance <= 140 ? best.name : '';
+      }
+      function requestDeviceCity() {
+        if (deviceCityCache) return Promise.resolve(deviceCityCache);
+        if (deviceCityRequest) return deviceCityRequest;
+        if (!navigator.geolocation) return Promise.resolve('');
+        deviceCityRequest = new Promise(resolve => {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              deviceCityCache = nearestCity(position.coords.latitude, position.coords.longitude);
+              resolve(deviceCityCache);
+            },
+            () => resolve(''),
+            { enableHighAccuracy: false, timeout: 6000, maximumAge: 600000 }
+          );
+        }).finally(() => { deviceCityRequest = null; });
+        return deviceCityRequest;
+      }
+      function entryTextValue(e) {
+        if (!e) return '';
+        if (Array.isArray(e.segments) && e.segments.length) return e.segments.map(segment => segment.text || '').join(' ');
+        return (e.content || []).join(' ');
+      }
+      function refreshEntryLocationFromText(e) {
+        if (!e || e.sample) return e ? (e.loc || '') : '';
+        const found = cityFromText(entryTextValue(e));
+        if (found) {
+          e.loc = found;
+          e.locSource = 'text';
+        } else if (e.locSource === 'text' || (!e.locSource && (e.loc === '上海' || e.loc === '导入'))) {
+          e.loc = '';
+          e.locSource = '';
+        }
+        return e.loc || '';
+      }
+      function metaTextForEntry(key, e, includeVisibility) {
+        const parts = [];
+        if (e.wx) parts.push(e.wx);
+        if (e.loc) parts.push(e.loc);
+        if (includeVisibility) parts.push(visLabel(e));
+        return parts.join(' · ');
+      }
+      function updateDiaryMeta(key) {
+        const e = entry(key);
+        const time = e.segments && e.segments.length && e.segments[0].time
+          ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>'
+          : '';
+        const details = metaTextForEntry(key, e, false);
+        $('#metaLine').innerHTML = fullDateOf(key) + ' ' + e.wd + (details ? ' · ' + esc(details) : '') + time;
+      }
+      function requestEntryFallbackLocation(key) {
+        const e = entry(key);
+        if (e.sample || e.loc || e.locSource === 'manual') return;
+        requestDeviceCity().then(city => {
+          const current = entry(key);
+          if (!city || current.loc) return;
+          current.loc = city;
+          current.locSource = 'device';
+          saveEntries(false);
+          if (state.screen === 'diary' && state.activeDate === key) updateDiaryMeta(key);
+        });
+      }
       function birthdaysForDate(key) {
         if (!BIRTHDAYS.length || !window.Solar) return [];
         const date = parseDateKey(key);
@@ -1656,7 +1782,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       let state = { screen: 'calendar', filter: null, tagFilter: null, searchScope: null, activeDate: todayKey, listening: false, step: 0, timer: null, transcript: '', spoken: [], justWritten: false };
 
       const sortedDates = () => Object.keys(DAYS).sort((a, b) => a - b);
-      const entry = key => DAYS[key] || (DAYS[key] = { wd: weekdayOf(key), wx: '晴', loc: '上海', main: null, sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
+      const entry = key => DAYS[key] || (DAYS[key] = { wd: weekdayOf(key), wx: '', loc: '', locSource: '', main: null, sub: null, kws: [], content: ['今天想记录点什么，点麦克风直接说。'] });
 
       let saveTimer = null;
       function isRealEntry(e) {
@@ -1967,11 +2093,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         calGridEl.style.transform = '';
         calGridEl.style.opacity = '';
         const e = entry(key);
+        refreshEntryLocationFromText(e);
         const observance = calendarObservance(key);
         $('#sDot').hidden = !e.main;
         $('#sDot').style.background = e.main ? dimOf[projectDimKey(e.main)].color : 'transparent';
         $('#sDate').textContent = monthDayOf(key) + ' · ' + e.wd;
-        $('#sMeta').textContent = (observance.full.length ? observance.full.join(' · ') + ' · ' : '') + e.wx + ' · ' + e.loc + ' · ' + visLabel(e);
+        const metaText = metaTextForEntry(key, e, true);
+        $('#sMeta').textContent = (observance.full.length ? observance.full.join(' · ') + ' · ' : '') + metaText;
         $('#sHighlight').value = extractDayHighlight(e, key);
         renderSheetTags(key);
         const hasMedia = e.media && e.media.photos && e.media.photos.length;
@@ -2115,10 +2243,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       function renderDiary(key) {
         const e = entry(key);
         state.activeDate = key;
+        refreshEntryLocationFromText(e);
         $('#diarySeal').hidden = true;
         const fmt = monthDayOf(key) + ' · ' + e.wd;
         $('#dayNavLabel').textContent = fmt;
-        $('#metaLine').innerHTML = fullDateOf(key) + ' ' + e.wd + ' · ' + e.wx + ' · ' + e.loc + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '');
+        updateDiaryMeta(key);
+        requestEntryFallbackLocation(key);
         if (e.segments) {
           $('#contentArea').innerHTML = e.segments.map(s => '<p>' + highlight(s.text, s.kws) + '</p>').join('');
         } else {
@@ -2165,6 +2295,144 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
         if (Number.isInteger(prefs.fontLevel) && FONTS[prefs.fontLevel]) fontLevel = prefs.fontLevel;
       } catch (_) {}
+
+      function createDiaryPreviewPage(key) {
+        const e = entry(key);
+        refreshEntryLocationFromText(e);
+        const paper = el('div', 'paper diary-drag-page', '');
+        paper.appendChild(el('div', 'rules', ''));
+        const body = el('div', 'body', '');
+        const meta = el('div', 'meta', '');
+        const details = metaTextForEntry(key, e, false);
+        meta.innerHTML = fullDateOf(key) + ' ' + e.wd + (details ? ' · ' + esc(details) : '') +
+          (e.segments && e.segments.length && e.segments[0].time ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '');
+        const content = el('div', 'content ' + FONTS[fontLevel].c, '');
+        content.innerHTML = e.segments
+          ? e.segments.map(segment => '<p>' + highlight(segment.text, segment.kws) + '</p>').join('')
+          : e.content.map(paragraph => '<p>' + highlight(paragraph, e.kws) + '</p>').join('');
+        body.appendChild(meta);
+        body.appendChild(content);
+        paper.appendChild(body);
+        return { page: paper, key };
+      }
+
+      let diarySwipe = null, diaryAnimating = false;
+      const diaryScreenEl = $('#diaryScreen');
+      const currentDiaryPaper = () => $('#diaryScreen > .paper');
+      const positionDiaryPreview = (preview, direction, rect, parentRect) => {
+        const page = preview.page;
+        page.style.left = (rect.left - parentRect.left + direction * rect.width) + 'px';
+        page.style.top = (rect.top - parentRect.top) + 'px';
+        page.style.width = rect.width + 'px';
+        page.style.height = rect.height + 'px';
+        page.style.flex = '0 0 auto';
+        page.style.transform = 'translate3d(0,0,0)';
+        diaryScreenEl.appendChild(page);
+      };
+      const prepareDiaryPreviews = () => {
+        if (!diarySwipe || diarySwipe.previews) return;
+        diarySwipe.previews = [-1, 1].map(direction => {
+          const preview = createDiaryPreviewPage(shiftDateKey(diarySwipe.key, direction));
+          preview.direction = direction;
+          positionDiaryPreview(preview, direction, diarySwipe.rect, diarySwipe.parentRect);
+          return preview;
+        });
+      };
+      const finishDiarySwap = (direction, rect, fromX, previews) => {
+        if (diaryAnimating) return;
+        diaryAnimating = true;
+        const paper = currentDiaryPaper();
+        const target = previews.find(preview => preview.direction === direction);
+        const targetX = -direction * rect.width;
+        const easing = 'cubic-bezier(.22,1,.36,1)';
+        animateDiaryPaperSwipe(paper, target.page, targetX, fromX, easing, () => {
+          state.activeDate = target.key;
+          renderDiary(target.key);
+          const nextPaper = currentDiaryPaper();
+          nextPaper.style.transition = 'none';
+          nextPaper.style.transform = '';
+          nextPaper.style.opacity = '';
+          previews.forEach(preview => preview.page.remove());
+          diaryAnimating = false;
+        });
+      };
+      function animateDiaryPaperSwipe(paper, targetPage, targetX, fromX, easing, done) {
+        const current = paper.animate([
+          { transform: 'translate3d(' + fromX + 'px,0,0)', opacity: 1 },
+          { transform: 'translate3d(' + targetX + 'px,0,0)', opacity: .18 }
+        ], { duration: 230, easing });
+        const incoming = targetPage.animate([
+          { transform: 'translate3d(' + fromX + 'px,0,0)', opacity: 1 },
+          { transform: 'translate3d(' + targetX + 'px,0,0)', opacity: 1 }
+        ], { duration: 250, easing, fill: 'forwards' });
+        Promise.allSettled([current.finished, incoming.finished]).finally(done);
+      }
+      const navigateDiaryBy = (direction, animate = true) => {
+        if (diaryAnimating) return;
+        const key = shiftDateKey(state.activeDate, direction);
+        if (!animate) { state.activeDate = key; renderDiary(key); return; }
+        const rect = currentDiaryPaper().getBoundingClientRect();
+        const parentRect = diaryScreenEl.getBoundingClientRect();
+        const preview = createDiaryPreviewPage(key);
+        preview.direction = direction;
+        positionDiaryPreview(preview, direction, rect, parentRect);
+        finishDiarySwap(direction, rect, 0, [preview]);
+      };
+      diaryScreenEl.addEventListener('pointerdown', event => {
+        if (diaryAnimating) return;
+        if (event.target.closest('button, input, textarea, .entry-color-scroll')) return;
+        const paper = currentDiaryPaper();
+        if (!paper) return;
+        resetDiaryPaper();
+        diarySwipe = {
+          id: event.pointerId, x: event.clientX, y: event.clientY,
+          key: state.activeDate, axis: null, previews: null, lastX: 0,
+          rect: paper.getBoundingClientRect(), parentRect: diaryScreenEl.getBoundingClientRect()
+        };
+        diaryScreenEl.setPointerCapture(event.pointerId);
+        paper.classList.add('swiping');
+      });
+      diaryScreenEl.addEventListener('pointermove', event => {
+        if (!diarySwipe || event.pointerId !== diarySwipe.id) return;
+        const dx = event.clientX - diarySwipe.x;
+        const dy = event.clientY - diarySwipe.y;
+        if (!diarySwipe.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 10) {
+          diarySwipe.axis = Math.abs(dx) > Math.abs(dy) * 1.25 ? 'x' : 'y';
+        }
+        if (diarySwipe.axis !== 'x') return;
+        if (event.cancelable) event.preventDefault();
+        prepareDiaryPreviews();
+        const offset = Math.max(-96, Math.min(96, dx * 0.5));
+        diarySwipe.lastX = offset;
+        currentDiaryPaper().style.transform = 'translate3d(' + offset + 'px,0,0)';
+        diarySwipe.previews.forEach(preview => {
+          preview.page.style.transform = 'translate3d(' + offset + 'px,0,0)';
+        });
+      });
+      const endDiarySwipe = event => {
+        if (!diarySwipe || event.pointerId !== diarySwipe.id) return;
+        const swipeData = diarySwipe;
+        diarySwipe = null;
+        const dx = event.clientX - swipeData.x;
+        const direction = dx < 0 ? 1 : -1;
+        const success = swipeData.axis === 'x' && Math.abs(dx) > 48;
+        if (success) {
+          saveEntries(false);
+          finishDiarySwap(direction, swipeData.rect, swipeData.lastX, swipeData.previews || []);
+        } else {
+          resetDiaryPaper();
+          (swipeData.previews || []).forEach(preview => preview.page.remove());
+        }
+      };
+      diaryScreenEl.addEventListener('pointerup', endDiarySwipe);
+      diaryScreenEl.addEventListener('pointercancel', endDiarySwipe);
+      function resetDiaryPaper() {
+        const paper = currentDiaryPaper();
+        if (!paper) return;
+        paper.style.transition = 'transform .2s cubic-bezier(.22,1,.36,1)';
+        paper.style.transform = '';
+        paper.classList.remove('swiping');
+      }
 
       function showToast(msg) {
         const t = $('#toast');
@@ -2217,7 +2485,9 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           pl.appendChild(card);
         });
         const e = entry(date);
-        $('#otdMeta').innerHTML = fullDateOf(date) + ' ' + e.wd + ' · ' + e.wx + ' · ' + e.loc + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '') + ' · ' + visLabel(e);
+        refreshEntryLocationFromText(e);
+        const details = metaTextForEntry(date, e, true);
+        $('#otdMeta').innerHTML = fullDateOf(date) + ' ' + e.wd + (details ? ' · ' + esc(details) : '') + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '');
         const oc = $('#otdContent');
         if (e.segments) {
           oc.innerHTML = e.segments.map(s => '<p>' + charWrap(s.text) + '</p>').join('');
@@ -2414,10 +2684,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const fullText = paragraphs.join('\n');
         const hasTime = blocks.some(block => block.time);
         const highlight = extractTextHighlight(fullText);
+        const location = cityFromText(fullText);
         return {
           wd: weekdayOf(key),
           wx: '旧日记',
-          loc: '导入',
+          loc: location,
+          locSource: location ? 'text' : '',
           vis: 'self',
           main: inferImportDimension(fullText),
           sub: null,
@@ -3330,6 +3602,88 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       });
       $('#scrim').addEventListener('click', closeSheet);
       $('#sheetClose').addEventListener('click', closeSheet);
+      let sheetSwipe = null, sheetAnimating = false;
+      const sheetEl = $('#sheet');
+      const resetSheetSwipe = () => {
+        sheetEl.style.transition = 'transform .2s cubic-bezier(.22,1,.36,1)';
+        sheetEl.style.translate = '';
+        sheetEl.style.opacity = '';
+        sheetEl.classList.remove('swiping');
+      };
+      const navigateSheetBy = (direction, dragOffset = 0) => {
+        if (sheetAnimating || !state.sheetDate) return;
+        sheetAnimating = true;
+        const oldSheet = sheetEl.cloneNode(true);
+        oldSheet.removeAttribute('id');
+        oldSheet.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+        oldSheet.classList.add('sheet-clone');
+        oldSheet.style.transition = 'none';
+        oldSheet.style.translate = '';
+        sheetEl.parentElement.appendChild(oldSheet);
+        sheetEl.style.transition = 'none';
+        sheetEl.style.translate = '';
+        sheetEl.style.opacity = '0';
+        openSheet(shiftDateKey(state.sheetDate, direction));
+        const easing = 'cubic-bezier(.22,1,.36,1)';
+        const outgoing = oldSheet.animate([
+          { transform: 'translate3d(' + dragOffset + 'px,0,0)', opacity: 1 },
+          { transform: 'translate3d(' + (-direction * 70) + 'px,0,0)', opacity: 0 }
+        ], { duration: 180, easing, fill: 'forwards' });
+        const incoming = sheetEl.animate([
+          { transform: 'translate3d(' + (direction * 54) + 'px,0,0)', opacity: 0 },
+          { transform: 'translate3d(0,0,0)', opacity: 1 }
+        ], { duration: 220, easing });
+        Promise.allSettled([outgoing.finished, incoming.finished]).finally(() => {
+          oldSheet.remove();
+          sheetEl.style.opacity = '';
+          sheetEl.style.translate = '';
+          sheetEl.classList.remove('swiping');
+          sheetAnimating = false;
+        });
+      };
+      sheetEl.addEventListener('pointerdown', event => {
+        if (sheetAnimating) return;
+        if (event.target.closest('button, input, textarea, .s-tags')) return;
+        sheetSwipe = { id: event.pointerId, x: event.clientX, y: event.clientY, axis: null, offset: 0 };
+        sheetEl.setPointerCapture(event.pointerId);
+        sheetEl.classList.add('swiping');
+      });
+      sheetEl.addEventListener('pointermove', event => {
+        if (!sheetSwipe || event.pointerId !== sheetSwipe.id) return;
+        const dx = event.clientX - sheetSwipe.x;
+        const dy = event.clientY - sheetSwipe.y;
+        if (!sheetSwipe.axis && Math.max(Math.abs(dx), Math.abs(dy)) > 8) {
+          sheetSwipe.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'x' : 'y';
+        }
+        if (sheetSwipe.axis !== 'x') return;
+        if (event.cancelable) event.preventDefault();
+        sheetSwipe.offset = Math.max(-70, Math.min(70, dx * 0.55));
+        sheetEl.style.translate = sheetSwipe.offset + 'px 0';
+        sheetEl.style.opacity = String(1 - Math.min(.16, Math.abs(sheetSwipe.offset) / 430));
+      });
+      const endSheetSwipe = event => {
+        if (!sheetSwipe || event.pointerId !== sheetSwipe.id) return;
+        const swipeData = sheetSwipe;
+        sheetSwipe = null;
+        const dx = event.clientX - swipeData.x;
+        const success = swipeData.axis === 'x' && Math.abs(dx) > 42;
+        if (success) {
+          navigateSheetBy(dx < 0 ? 1 : -1, swipeData.offset);
+        } else if (swipeData.axis === 'x') {
+          sheetEl.style.translate = '';
+          sheetEl.animate([
+            { transform: 'translate3d(' + swipeData.offset + 'px,0,0)', opacity: .9 },
+            { transform: 'translate3d(0,0,0)', opacity: 1 }
+          ], { duration: 160, easing: 'cubic-bezier(.22,1,.36,1)' }).finished.finally(() => {
+            sheetEl.style.translate = '';
+            resetSheetSwipe();
+          });
+        } else {
+          resetSheetSwipe();
+        }
+      };
+      sheetEl.addEventListener('pointerup', endSheetSwipe);
+      sheetEl.addEventListener('pointercancel', endSheetSwipe);
       const saveSheetHighlight = () => {
         if (!state.sheetDate) return;
         const value = $('#sHighlight').value.trim().slice(0, 9);
@@ -3354,14 +3708,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         showScreen('diary');
       });
       $('#backBtn').addEventListener('click', () => { closeSheet(); showScreen('calendar'); });
-      $('#prevDayBtn').addEventListener('click', () => {
-        const keys = sortedDates(); const i = keys.indexOf(state.activeDate);
-        if (i > 0) renderDiary(keys[i - 1]);
-      });
-      $('#nextDayBtn').addEventListener('click', () => {
-        const keys = sortedDates(); const i = keys.indexOf(state.activeDate);
-        if (i < keys.length - 1) renderDiary(keys[i + 1]);
-      });
+      $('#prevDayBtn').addEventListener('click', () => navigateDiaryBy(-1));
+      $('#nextDayBtn').addEventListener('click', () => navigateDiaryBy(1));
       $('#fontBtn').addEventListener('click', () => {
         fontLevel = (fontLevel + 1) % FONTS.length;
         $('#contentArea').className = 'content ' + FONTS[fontLevel].c;
@@ -3387,12 +3735,17 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const e = entry(state.activeDate);
         e.content = $('#contentArea').innerText.split('\n').map(s => s.trim()).filter(Boolean);
         e.segments = null;
+        refreshEntryLocationFromText(e);
+        updateDiaryMeta(state.activeDate);
         scheduleSave();
       });
       $('#contentArea').addEventListener('blur', () => {
         const e = entry(state.activeDate);
         e.content = $('#contentArea').innerText.split('\n').map(s => s.trim()).filter(Boolean);
         e.segments = null;
+        refreshEntryLocationFromText(e);
+        updateDiaryMeta(state.activeDate);
+        requestEntryFallbackLocation(state.activeDate);
         saveEntries(false);
         $('#contentArea').innerHTML = e.content.map(p => '<p>' + highlight(p, e.kws) + '</p>').join('');
       });
