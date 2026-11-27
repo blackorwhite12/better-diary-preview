@@ -1289,7 +1289,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.2.6（Build 25）</div>
+        <div class="app-version">叨叨日记 · v1.2.7（Build 26）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -3063,7 +3063,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             renderTagColorPalette();
           });
           remove.addEventListener('click', () => {
-            if (!confirm('删除标记「' + tag.name + '」？相关日期上的这个标记也会移除。')) return;
+            const usedDays = Object.values(DAYS).filter(entryValue =>
+              Array.isArray(entryValue.tags) && entryValue.tags.includes(tag.id)
+            ).length;
+            const message = usedDays
+              ? '标记「' + tag.name + '」已用于 ' + usedDays + ' 天。\n删除后会从这些日期移除，确定删除吗？'
+              : '确定删除标记「' + tag.name + '」吗？';
+            if (!confirm(message)) return;
             CUSTOM_TAGS = CUSTOM_TAGS.filter(item => item.id !== tag.id);
             Object.values(DAYS).forEach(entryValue => {
               if (Array.isArray(entryValue.tags)) entryValue.tags = entryValue.tags.filter(id => id !== tag.id);
@@ -3073,6 +3079,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
             saveEntries(false);
             renderTagManager();
             refreshTagDependentViews();
+            showToast('已删除标记：' + tag.name);
           });
           row.appendChild(swatch);
           row.appendChild(name);
