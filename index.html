@@ -88,6 +88,98 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       box-shadow: inset 0 0 0 1.5px var(--gold), 0 0 14px color-mix(in srgb, var(--gold) 70%, transparent);
     }
     #diary-mock[data-theme="cyber"] .theme-btn { box-shadow: inset 0 0 0 1px var(--gold), 0 0 8px color-mix(in srgb, var(--gold) 50%, transparent); }
+    #diary-mock[data-theme="botanical"] {
+      --paper: #f4f1e7;
+      --paper-deep: #ebe7d9;
+      --ink: #29362e;
+      --ink-soft: #778175;
+      --line: #cbd1c3;
+      --gold: #81966f;
+      --chip: #e8ecdf;
+      --scrim: rgba(34, 45, 34, .28);
+      --otd-top: #eef0e5;
+      background: #ebe8dc;
+    }
+    #diary-mock[data-theme="botanical"] .phone {
+      background:
+        radial-gradient(circle at 12% 8%, rgba(129, 150, 111, .11), transparent 27%),
+        radial-gradient(circle at 90% 88%, rgba(176, 151, 93, .09), transparent 26%),
+        #f4f1e7;
+      border-color: #cfd5c8;
+      box-shadow: 0 26px 60px rgba(49, 61, 43, .18);
+    }
+    #diary-mock[data-theme="botanical"] #calendarScreen {
+      background-image:
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(103, 122, 93, .045) 31px 32px),
+        radial-gradient(circle at 86% 10%, rgba(129, 150, 111, .10), transparent 20%);
+    }
+    #diary-mock[data-theme="botanical"] .bg-fx {
+      opacity: .34;
+      background:
+        radial-gradient(440px 330px at 6% 18%, rgba(139, 164, 121, .22), transparent 66%),
+        radial-gradient(380px 300px at 94% 82%, rgba(190, 165, 107, .13), transparent 68%);
+    }
+    #diary-mock[data-theme="botanical"] .bg-fx .sweep { display: none; }
+    #diary-mock[data-theme="botanical"] .cal-head h2 {
+      font-family: "Songti SC", "STSong", serif; color: #405442; letter-spacing: .045em;
+    }
+    #diary-mock[data-theme="botanical"] .theme-btn,
+    #diary-mock[data-theme="botanical"] .import-btn,
+    #diary-mock[data-theme="botanical"] .nav button {
+      background: rgba(236, 239, 228, .86); border: 1px solid #c9d0c0;
+      color: #536650; box-shadow: none;
+    }
+    #diary-mock[data-theme="botanical"] .f-chip {
+      background: rgba(249, 247, 239, .62); border-color: #cbd2c4; border-radius: 7px;
+    }
+    #diary-mock[data-theme="botanical"] .f-chip.on {
+      background: color-mix(in srgb, var(--fc) 14%, #f7f4ea);
+      border-color: color-mix(in srgb, var(--fc) 64%, #bac4b6);
+    }
+    #diary-mock[data-theme="botanical"] .grid { gap: 6px; }
+    #diary-mock[data-theme="botanical"] .day {
+      border-radius: 8px; background: rgba(251, 249, 242, .72);
+      box-shadow: inset 0 0 0 1px rgba(143, 158, 132, .44);
+    }
+    #diary-mock[data-theme="botanical"] .day.has {
+      background: rgba(248, 248, 239, .94);
+      box-shadow: inset 0 0 0 1.5px #81966f;
+    }
+    #diary-mock[data-theme="botanical"] .day.has:not(.today):not(.hit) {
+      background: #fbfaf3;
+      box-shadow: inset 0 0 0 1.5px #81966f;
+    }
+    #diary-mock[data-theme="botanical"] .day.today {
+      background: color-mix(in srgb, #f8f5e8 90%, #c9aa67 10%);
+      box-shadow: inset 0 0 0 1.5px #b89a5f;
+    }
+    #diary-mock[data-theme="botanical"] .day.today .num::before { background: #cdb077; }
+    #diary-mock[data-theme="botanical"] .day-label {
+      color: #435a46; letter-spacing: .08em;
+    }
+    #diary-mock[data-theme="botanical"] .day-topline .term { color: #7b896c; }
+    #diary-mock[data-theme="botanical"] .day-topline .festival { color: #a05e4b; }
+    #diary-mock[data-theme="botanical"] .day-topline .other { color: #657b70; }
+    #diary-mock[data-theme="botanical"] .quick-add.primary {
+      background: linear-gradient(135deg, #b7c5a5, #81966f); color: #f9f8ef;
+      box-shadow: 0 7px 18px rgba(83, 105, 72, .22);
+    }
+    #diary-mock[data-theme="botanical"] .quick-add {
+      border-color: #bfc9ba; color: #667263; background: rgba(248, 246, 237, .58);
+    }
+    #diary-mock[data-theme="botanical"] .paper {
+      background-color: #f8f5ea;
+      background-image:
+        radial-gradient(circle at 88% 12%, rgba(126, 150, 107, .09), transparent 22%),
+        repeating-linear-gradient(0deg, transparent 0 27px, rgba(112, 128, 102, .18) 27px 28px);
+    }
+    #diary-mock[data-theme="botanical"] .entry-color.on {
+      background: color-mix(in srgb, var(--ec) 13%, #f8f5ea);
+    }
+    #diary-mock[data-theme="botanical"] .streak {
+      background: #e4e8da; color: #53664f; box-shadow: none;
+    }
+    #diary-mock[data-theme="botanical"] .app-version { color: #7a8275; }
     #diary-mock[data-theme="cool"] .screen,
     #diary-mock[data-theme="cyber"] .screen {
       background: rgba(8, 12, 24, .42);
@@ -1059,7 +1151,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.1.8（Build 18）</div>
+        <div class="app-version">叨叨日记 · v1.2.0（Build 19）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1283,11 +1375,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           deco: '🚀 🏀',
           dims: { happy: '#67b7ff', angry: '#8b95a7', calm: '#a8d8d0', miss: '#c9a6cf', out: '#6fc0d2', together: '#7fc4b2', down: '#e6817e' }
         },
-        cyber: {
-          name: '赛博',
-          emoji: '⚡',
-          deco: '⚡ 🌐',
-          dims: { happy: '#38bdf8', angry: '#94a3b8', calm: '#3ee6c4', miss: '#c084fc', out: '#38bdf8', together: '#4ade80', down: '#fb7185' }
+        botanical: {
+          name: '自然 · 标本',
+          emoji: '🌿',
+          deco: '🍃 🌱',
+          dims: { happy: '#5f8da8', angry: '#444b45', calm: '#8aa078', miss: '#a98f87', out: '#6e9587', together: '#7f9c76', down: '#b96e63' }
         }
       };
       const STORAGE_KEY = 'better-diary-local-v1';
@@ -1311,7 +1403,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       let theme = 'warm';
       try {
         const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
-        if (THEMES[prefs.theme]) theme = prefs.theme;
+        if (prefs.theme === 'cyber') theme = 'botanical';
+        else if (THEMES[prefs.theme]) theme = prefs.theme;
       } catch (_) {}
       function applyTheme(name) {
         theme = name;
@@ -3143,7 +3236,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       $('#prevMonthBtn').addEventListener('click', () => animateCalendarStep('x', -1));
       $('#nextMonthBtn').addEventListener('click', () => animateCalendarStep('x', 1));
       $('#themeBtn').addEventListener('click', () => {
-        const order = ['warm', 'cool', 'cyber'];
+        const order = ['warm', 'cool', 'botanical'];
         const next = order[(order.indexOf(theme) + 1) % order.length];
         applyTheme(next);
         showToast('已切换到「' + THEMES[next].name + '」主题');
