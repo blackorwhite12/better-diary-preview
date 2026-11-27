@@ -229,7 +229,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock #calendarScreen {
       touch-action: none; overscroll-behavior: contain; will-change: transform, opacity;
     }
-    #diary-mock #calendarScreen.swiping { transition: none; }
+    #diary-mock #calendarGrid { will-change: transform, opacity; transform-origin: center; }
+    #diary-mock #calendarGrid.swiping { transition: none !important; }
+    #diary-mock .calendar-page-snapshot {
+      pointer-events: none; z-index: 8; box-sizing: border-box; margin: 0;
+      background: var(--paper); will-change: transform, opacity;
+    }
     #diary-mock .screen.off { transform: translateX(100%); pointer-events: none; }
     #diary-mock .cal-head {
       display: flex; align-items: center; padding: 6px 20px 2px;
@@ -1048,7 +1053,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.1.4（Build 14）</div>
+        <div class="app-version">叨叨日记 · v1.1.5（Build 15）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1717,10 +1722,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
       }
 
       function openSheet(key) {
-        if (calScrEl) {
-          calScrEl.style.transform = '';
-          calScrEl.style.opacity = '';
-        }
+        calGridEl.style.transform = '';
+        calGridEl.style.opacity = '';
         const e = entry(key);
         const observance = calendarObservance(key);
         $('#sDot').hidden = !e.main;
@@ -2834,21 +2837,60 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         inp.addEventListener('blur', commit);
       }
 
-      let swipe = null, suppressClick = false;
+      let swipe = null, suppressClick = false, calendarAnimating = false;
       const calScrEl = $('#calendarScreen');
+      const calGridEl = $('#calendarGrid');
       const resetCalendarTransform = (animate = true) => {
-        calScrEl.style.transition = animate ? 'transform .2s cubic-bezier(.2,.8,.2,1), opacity .2s ease' : 'none';
-        calScrEl.style.transform = '';
-        calScrEl.style.opacity = '';
-        calScrEl.classList.remove('swiping');
+        calGridEl.style.transition = animate ? 'transform .2s cubic-bezier(.2,.8,.2,1), opacity .2s ease' : 'none';
+        calGridEl.style.transform = '';
+        calGridEl.style.opacity = '';
+        calGridEl.classList.remove('swiping');
+      };
+      const animateCalendarPage = (action, axis, direction) => {
+        if (calendarAnimating) return;
+        calendarAnimating = true;
+        resetCalendarTransform(false);
+        const rect = calGridEl.getBoundingClientRect();
+        const parentRect = calScrEl.getBoundingClientRect();
+        const snapshot = calGridEl.cloneNode(true);
+        snapshot.removeAttribute('id');
+        snapshot.classList.remove('fade', 'swiping');
+        snapshot.classList.add('calendar-page-snapshot');
+        snapshot.style.left = (rect.left - parentRect.left) + 'px';
+        snapshot.style.top = (rect.top - parentRect.top) + 'px';
+        snapshot.style.width = rect.width + 'px';
+        snapshot.style.height = rect.height + 'px';
+        snapshot.style.padding = getComputedStyle(calGridEl).padding;
+        calScrEl.appendChild(snapshot);
+        action();
+        const distance = axis === 'x' ? Math.max(42, rect.width * .14) : Math.max(38, rect.height * .08);
+        const outX = axis === 'x' ? -direction * distance : 0;
+        const outY = axis === 'y' ? -direction * distance : 0;
+        const inX = axis === 'x' ? direction * distance : 0;
+        const inY = axis === 'y' ? direction * distance : 0;
+        const easing = 'cubic-bezier(.22,1,.36,1)';
+        const outgoing = snapshot.animate([
+          { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 },
+          { transform: 'translate3d(' + outX + 'px,' + outY + 'px,0) scale(.985)', opacity: 0 }
+        ], { duration: 240, easing, fill: 'forwards' });
+        const incoming = calGridEl.animate([
+          { transform: 'translate3d(' + inX + 'px,' + inY + 'px,0) scale(.985)', opacity: 0 },
+          { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 }
+        ], { duration: 280, easing });
+        Promise.allSettled([outgoing.finished, incoming.finished]).finally(() => {
+          snapshot.remove();
+          resetCalendarTransform(false);
+          calendarAnimating = false;
+        });
       };
       calScrEl.addEventListener('pointerdown', e => {
+        if (calendarAnimating) return;
         if (e.clientX < 18 || e.clientX > calScrEl.clientWidth - 18) return;
         const button = e.target.closest('button');
         if (button && !button.classList.contains('day')) return;
         swipe = { x: e.clientX, y: e.clientY, id: e.pointerId, time: performance.now(), axis: null, moved: false };
         calScrEl.setPointerCapture(e.pointerId);
-        calScrEl.classList.add('swiping');
+        calGridEl.classList.add('swiping');
       });
       calScrEl.addEventListener('pointermove', e => {
         if (!swipe || e.pointerId !== swipe.id) return;
@@ -2861,11 +2903,11 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         if (e.cancelable) e.preventDefault();
         if (swipe.axis === 'x') {
           const offset = Math.max(-92, Math.min(92, dx * 0.48));
-          calScrEl.style.transform = 'translate3d(' + offset + 'px,0,0)';
-          calScrEl.style.opacity = String(1 - Math.min(.18, Math.abs(offset) / 620));
+          calGridEl.style.transform = 'translate3d(' + offset + 'px,0,0)';
+          calGridEl.style.opacity = String(1 - Math.min(.16, Math.abs(offset) / 700));
         } else {
           const offset = Math.max(-58, Math.min(58, dy * 0.32));
-          calScrEl.style.transform = 'translate3d(0,' + offset + 'px,0) scale(' + (1 - Math.min(.025, Math.abs(offset) / 2800)) + ')';
+          calGridEl.style.transform = 'translate3d(0,' + offset + 'px,0) scale(' + (1 - Math.min(.022, Math.abs(offset) / 3200)) + ')';
         }
       });
       const endSwipe = e => {
@@ -2888,23 +2930,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         suppressClick = true;
         clearTimeout(endSwipe._resetClick);
         endSwipe._resetClick = setTimeout(() => { suppressClick = false; }, 420);
-        let action;
         if (horizontal) {
-          action = () => changeMonth(dx < 0 ? 1 : -1);
-          calScrEl.style.transition = 'transform .12s ease, opacity .12s ease';
-          calScrEl.style.transform = 'translate3d(' + (dx < 0 ? -52 : 52) + 'px,0,0)';
-          calScrEl.style.opacity = '.72';
+          const direction = dx < 0 ? 1 : -1;
+          animateCalendarPage(() => changeMonth(direction), 'x', direction);
         } else {
-          action = () => changeYear(dy < 0 ? 1 : -1);
-          calScrEl.style.transition = 'transform .12s ease, opacity .12s ease';
-          calScrEl.style.transform = 'translate3d(0,' + (dy < 0 ? -32 : 32) + 'px,0) scale(.99)';
-          calScrEl.style.opacity = '.78';
+          const direction = dy < 0 ? 1 : -1;
+          animateCalendarPage(() => changeYear(direction), 'y', direction);
         }
-        setTimeout(() => {
-          action();
-          resetCalendarTransform(false);
-          requestAnimationFrame(() => resetCalendarTransform(true));
-        }, 95);
       };
       calScrEl.addEventListener('pointerup', endSwipe);
       calScrEl.addEventListener('pointercancel', endSwipe);
@@ -2915,8 +2947,8 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         }
       });
 
-      $('#prevMonthBtn').addEventListener('click', () => changeMonth(-1));
-      $('#nextMonthBtn').addEventListener('click', () => changeMonth(1));
+      $('#prevMonthBtn').addEventListener('click', () => animateCalendarPage(() => changeMonth(-1), 'x', -1));
+      $('#nextMonthBtn').addEventListener('click', () => animateCalendarPage(() => changeMonth(1), 'x', 1));
       $('#themeBtn').addEventListener('click', () => {
         const order = ['warm', 'cool', 'cyber'];
         const next = order[(order.indexOf(theme) + 1) % order.length];
