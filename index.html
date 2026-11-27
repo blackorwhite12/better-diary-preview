@@ -960,6 +960,94 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
     #diary-mock .yr-card.empty { cursor: default; box-shadow: inset 0 0 0 1px dashed var(--line); }
     #diary-mock .yr-card.empty .yr-dot { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
     #diary-mock .yr-card.empty .yr-text { color: var(--ink-soft); }
+    #diary-mock .otd-view {
+      transform: none; transition: none; visibility: hidden; pointer-events: none;
+    }
+    #diary-mock .otd-view.open { transform: none; visibility: visible; pointer-events: auto; }
+    #diary-mock .otd-compare {
+      flex: 1; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) 28px minmax(0, 1fr);
+      gap: 7px; padding: 8px 14px max(18px, env(safe-area-inset-bottom)); overflow: hidden;
+    }
+    #diary-mock .otd-quote {
+      margin: 0; padding: 2px 8px 5px; text-align: center;
+      font-family: "Songti SC", "STSong", serif; font-size: 11px; line-height: 1.55;
+      color: color-mix(in srgb, #a8442e 72%, var(--ink-soft)); letter-spacing: .04em;
+    }
+    #diary-mock .otd-card {
+      min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+      border-radius: 16px; padding: 13px 14px;
+    }
+    #diary-mock .otd-past-card {
+      color: color-mix(in srgb, var(--ink) 78%, var(--ink-soft));
+      background:
+        repeating-linear-gradient(0deg, transparent 0 25px, color-mix(in srgb, var(--line) 32%, transparent) 25px 26px),
+        color-mix(in srgb, var(--paper-deep) 88%, #b9a27f 12%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 75%, transparent);
+    }
+    #diary-mock .otd-today-card {
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--gold) 7%, var(--paper)), var(--paper) 42%);
+      box-shadow:
+        inset 0 0 0 1.5px color-mix(in srgb, var(--gold) 60%, var(--line)),
+        0 8px 24px color-mix(in srgb, var(--ink) 8%, transparent);
+    }
+    #diary-mock .otd-card-head {
+      flex: 0 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+      padding-bottom: 9px; border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+    }
+    #diary-mock .otd-card-head h3 { margin: 2px 0 0; font-size: 15px; font-weight: 650; color: var(--ink); }
+    #diary-mock .otd-kicker { display: block; font-size: 9px; letter-spacing: .12em; color: var(--ink-soft); }
+    #diary-mock .otd-seal {
+      width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center;
+      border: 1.5px solid color-mix(in srgb, var(--gold) 72%, #a8442e);
+      color: color-mix(in srgb, #a8442e 70%, var(--gold)); border-radius: 5px;
+      font-family: "Songti SC", serif; font-size: 12px; font-weight: 700;
+      transform: rotate(-4deg);
+    }
+    #diary-mock .otd-world-block {
+      flex: 0 0 auto; padding: 8px 0 9px; border-bottom: 1px dashed color-mix(in srgb, var(--line) 70%, transparent);
+    }
+    #diary-mock .otd-mini-title { font-size: 9px; color: var(--ink-soft); letter-spacing: .08em; }
+    #diary-mock .otd-world-block ul {
+      list-style: none; padding: 0; margin: 5px 0 0;
+      display: flex; flex-wrap: wrap; gap: 4px 6px;
+    }
+    #diary-mock .otd-world-block li {
+      font-size: 9px; line-height: 1.4; color: var(--ink-soft);
+      padding: 2px 6px; border-radius: 999px; background: color-mix(in srgb, var(--paper) 55%, transparent);
+    }
+    #diary-mock .otd-world-block li b { color: var(--ink); margin-right: 3px; }
+    #diary-mock .otd-years { flex: 1; min-height: 0; overflow-y: auto; padding-top: 7px; }
+    #diary-mock .otd-past-card .yr-card {
+      margin-bottom: 6px; padding: 8px 9px; border-radius: 9px;
+      background: color-mix(in srgb, var(--paper) 56%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 75%, transparent);
+    }
+    #diary-mock .otd-past-card .yr-card:last-child { margin-bottom: 0; }
+    #diary-mock .otd-past-card .yr { font-size: 11px; width: 34px; color: var(--ink); }
+    #diary-mock .otd-past-card .yr-text {
+      font-size: 11px; line-height: 1.55; display: -webkit-box;
+      -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+    }
+    #diary-mock .otd-bridge {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      font-size: 9px; font-weight: 650; letter-spacing: .12em; color: var(--ink-soft);
+    }
+    #diary-mock .otd-bridge::before, #diary-mock .otd-bridge::after {
+      content: ''; height: 1px; flex: 1; background: color-mix(in srgb, var(--line) 80%, transparent);
+    }
+    #diary-mock .otd-bridge i { font-style: normal; color: var(--gold); font-size: 15px; line-height: 1; }
+    #diary-mock .otd-today-card .meta {
+      flex: 0 0 auto; margin-top: 7px; border: none; padding: 0;
+      font-size: 9px; line-height: 1.55; color: var(--ink-soft);
+    }
+    #diary-mock .otd-today-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-top: 4px; }
+    #diary-mock .otd-today-card .content { font-size: 13px; line-height: 23px; color: var(--ink); }
+    #diary-mock .otd-today-card .content p { margin: 0 0 4px; text-indent: 2em; white-space: pre-wrap; }
+    #diary-mock .otd-today-card .otd-empty {
+      text-indent: 0; text-align: center; color: var(--ink-soft); opacity: .68; padding-top: 22px;
+    }
+    #diary-mock .otd-today-card .kw-row { padding: 7px 0 0; }
     #diary-mock .d-top {
       display: flex; align-items: center; gap: 10px; padding: 4px 14px 8px;
     }
@@ -1289,7 +1377,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <button type="button" class="quick-add otd" id="otdBtn">那年今日</button>
           <button type="button" class="quick-add" id="searchBtn">找日记</button>
         </div>
-        <div class="app-version">叨叨日记 · v1.2.7（Build 26）</div>
+        <div class="app-version">叨叨日记 · v1.2.8（Build 27）</div>
         <div class="streak-wrap" id="streakWrap">
           <span class="streak-cap">连续天数</span>
           <button type="button" class="streak" id="streakBadge" aria-label="连续天数，点击隐藏">🔥 12</button>
@@ -1380,34 +1468,36 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           <span class="otd-title">那年今日 <i class="otd-gem"></i> <span id="otdDate">8月9日</span></span>
           <span class="otd-top-spacer"></span>
         </div>
-        <div class="otd-canvas" id="otdCanvas">
-          <div class="otd-rules"></div>
-          <div class="otd-clip-top">
-            <div class="otd-context">
-              <div class="otd-context-inner">
-                <div class="otd-cols-row">
-                  <div class="otd-col">
-                    <h3>历史上的今天</h3>
-                    <ul id="otdWorldList"></ul>
-                  </div>
-                  <div class="otd-col-divider"></div>
-                  <div class="otd-col">
-                    <h3>那年这天的我</h3>
-                    <div id="otdPastList"></div>
-                  </div>
-                </div>
-              </div>
+        <div class="otd-compare" id="otdCanvas">
+          <p class="otd-quote">历史堆出了世界，而我捏出了自己。</p>
+          <section class="otd-card otd-past-card">
+            <div class="otd-card-head">
+              <span class="otd-kicker">过去的回声</span>
+              <h3>那年这天的我</h3>
             </div>
+            <div class="otd-world-block">
+              <span class="otd-mini-title">历史上的今天</span>
+              <ul id="otdWorldList"></ul>
+            </div>
+            <div class="otd-years" id="otdPastList"></div>
+          </section>
+          <div class="otd-bridge" aria-hidden="true">
+            <span>过去</span><i>→</i><span>今天</span>
           </div>
-          <div class="otd-paper">
-            <p class="otd-tag">历史堆成了世界，而我捏出了自己。</p>
-            <div class="body">
-              <div class="otd-paper-label"><span id="otdTodayDate">8月9日</span> · 今天的日记</div>
-              <div class="meta" id="otdMeta"></div>
+          <section class="otd-card otd-today-card">
+            <div class="otd-card-head">
+              <div>
+                <span class="otd-kicker">此刻的我</span>
+                <h3><span id="otdTodayDate">8月9日</span> · 今天的日记</h3>
+              </div>
+              <span class="otd-seal">今</span>
+            </div>
+            <div class="meta" id="otdMeta"></div>
+            <div class="otd-today-scroll">
               <div class="content" id="otdContent"></div>
               <div class="kw-row" id="otdKwRow"></div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
 
@@ -2550,6 +2640,7 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
 
       function openOTD() {
         const date = state.sheetDate || state.activeDate || todayKey;
+        const selectedDate = parseDateKey(date);
         $('#otdDate').textContent = monthDayOf(date);
         $('#otdTodayDate').textContent = monthDayOf(date);
         const wl = $('#otdWorldList'); wl.innerHTML = '';
@@ -2557,12 +2648,25 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           wl.appendChild(el('li', '', '<b>' + w.y + '</b>' + esc(w.t)));
         });
         const pl = $('#otdPastList'); pl.innerHTML = '';
-        MINE_OTD.forEach(m => {
-          const card = el('div', 'yr-card' + (m.dim ? '' : ' empty'), '');
-          card.appendChild(el('span', 'yr', m.y));
-          card.appendChild(el('span', 'yr-text', esc(m.text)));
-          if (m.dim) {
-            card.addEventListener('click', () => showToast('打开 ' + m.y + '年' + monthDayOf(date) + ' 的日记（演示）'));
+        const years = [1, 2, 3, 4].map(offset => selectedDate.year - offset);
+        years.forEach(year => {
+          const key = dateKeyOf(year, selectedDate.month, selectedDate.day);
+          const pastEntry = DAYS[key];
+          const hasPastEntry = isRealEntry(pastEntry);
+          const card = el('div', 'yr-card' + (hasPastEntry ? '' : ' empty'), '');
+          card.appendChild(el('span', 'yr', String(year)));
+          const dot = el('span', 'yr-dot', '');
+          if (hasPastEntry) dot.style.background = dimOf[projectDimKey(pastEntry.main || 'happy')].color;
+          card.appendChild(dot);
+          const pastText = hasPastEntry ? dayText(pastEntry).trim() : '';
+          card.appendChild(el('span', 'yr-text', hasPastEntry ? esc((pastText || '仅留下了颜色或事件标记').slice(0, 72)) : '这一年没有留下记录'));
+          if (hasPastEntry) {
+            card.addEventListener('click', () => {
+              closeOTD();
+              state.activeDate = key;
+              renderDiary(key);
+              showScreen('diary');
+            });
           }
           pl.appendChild(card);
         });
@@ -2571,10 +2675,12 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
         const details = metaTextForEntry(date, e, true);
         $('#otdMeta').innerHTML = fullDateOf(date) + ' ' + e.wd + (details ? ' · ' + esc(details) : '') + (e.segments && e.segments.length ? ' <span class="start-time">' + esc(e.segments[0].time) + '</span>' : '');
         const oc = $('#otdContent');
-        if (e.segments) {
-          oc.innerHTML = e.segments.map(s => '<p>' + charWrap(s.text) + '</p>').join('');
+        if (!isRealEntry(e)) {
+          oc.innerHTML = '<p class="otd-empty">这一天还没有写下日记。</p>';
+        } else if (e.segments && e.segments.length) {
+          oc.innerHTML = e.segments.map(segment => '<p>' + highlight(segment.text, segment.kws) + '</p>').join('');
         } else {
-          oc.innerHTML = e.content.map(p => '<p>' + charWrap(p) + '</p>').join('');
+          oc.innerHTML = e.content.map(paragraph => '<p>' + highlight(paragraph, e.kws) + '</p>').join('');
         }
         oc.className = 'content';
         const kr = $('#otdKwRow'); kr.innerHTML = '';
@@ -2586,15 +2692,13 @@ lucide.createIcons({icons});\``);if(typeof document>"u")throw new Error("`create
           kr.appendChild(c);
         });
         const v = $('#otdView');
-        v.classList.remove('landed');
         v.classList.add('open');
-        setTimeout(() => v.classList.add('landed'), 500);
         icons();
       }
 
       function closeOTD() {
         const v = $('#otdView');
-        v.classList.remove('open', 'landed');
+        v.classList.remove('open');
       }
 
       const dayColorKeys = e => Array.from(new Set((e.colors || [e.main, e.sub, e.extra].filter(Boolean)).map(projectDimKey)));
